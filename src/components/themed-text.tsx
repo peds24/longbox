@@ -30,28 +30,28 @@ export function ThemedText({ style, type = 'default', themeColor, ...rest }: The
 const styles = StyleSheet.create({
   default: {
     fontFamily: Fonts.mono,
-    fontSize: 14,
-    lineHeight: 20,
+    fontSize: 17,
+    lineHeight: 24,
   },
   subtitle: {
     fontFamily: Fonts.monoBold,
-    fontSize: 22,
-    lineHeight: 26,
+    fontSize: 27,
+    lineHeight: 31,
     letterSpacing: 0.3,
   },
   small: {
     fontFamily: Fonts.mono,
-    fontSize: 12,
-    lineHeight: 17,
+    fontSize: 15,
+    lineHeight: 21,
   },
   smallBold: {
     fontFamily: Fonts.monoBold,
-    fontSize: 12,
-    lineHeight: 17,
+    fontSize: 15,
+    lineHeight: 21,
   },
   prompt: {
     fontFamily: Fonts.mono,
-    fontSize: 11,
-    lineHeight: 15,
+    fontSize: 14,
+    lineHeight: 18,
   },
 });

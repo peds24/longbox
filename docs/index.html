@@ -4,11 +4,11 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Longbox — a terminal for your comics</title>
-<meta name="description" content="Longbox is a personal comic-reading tracker for Android and iOS. Scan or search a comic, track what you're reading, and increment to the next issue with real data pulled live from a comic database." />
+<meta name="description" content="Longbox is a personal comic-reading tracker for Android and iOS. Scan or search a comic, track what you're reading, and mark it as read — Longbox checks the real next issue for you and offers to add it." />
 <link rel="icon" type="image/svg+xml" href="assets/longbox-mark.svg" />
 <link rel="icon" type="image/png" href="assets/favicon-32.png" sizes="32x32" />
 <meta property="og:title" content="Longbox — a terminal for your comics" />
-<meta property="og:description" content="Scan a comic, track what you're reading, increment to the next issue with real data. No spreadsheet." />
+<meta property="og:description" content="Scan a comic, track what you're reading, mark it as read. Longbox checks the real next issue for you. No spreadsheet." />
 <meta property="og:image" content="assets/longbox-mark.png" />
 <style>
   @font-face {
@@ -297,7 +297,7 @@
       </div>
       <div class="screen">
         <div class="screen-bar"><span><b>LONGBOX</b> · [id].tsx</span><span>2 of 4</span></div>
-        <img src="screenshots/comic-detail.png" alt="Comic detail screen with Increment to Next Issue, Mark as Read, and Remove actions" loading="lazy" />
+        <img src="screenshots/comic-detail.png" alt="Comic detail screen with Mark as Read and Remove actions" loading="lazy" />
       </div>
       <div class="screen">
         <div class="screen-bar"><span><b>LONGBOX</b> · read.tsx</span><span>3 of 4</span></div>
@@ -328,13 +328,13 @@
       </div>
       <div class="feature">
         <div class="prompt">03</div>
-        <h3>Increment to next issue</h3>
-        <p>Re-queries the API for the real next issue — new cover, release date, issue number — and automatically logs the one you just finished into Comics Read.</p>
+        <h3>Mark as Read</h3>
+        <p>Checks the API for a real next issue first. Found one? You're asked whether to add it to Current Reading. Either way, the current issue moves to Comics Read.</p>
       </div>
       <div class="feature">
         <div class="prompt">04</div>
         <h3>Comics Read</h3>
-        <p>Full history with search, and three sort modes: Recent, A–Z, and a collapsible By Series grouping.</p>
+        <p>Full history with search, three sort modes (Recent, A–Z, a collapsible By Series grouping), and a Check for Next Issue button on every issue.</p>
       </div>
     </div>
   </div>
@@ -366,7 +366,7 @@ $ npx expo start</div>
       Requires a free <a href="https://metron.cloud">Metron</a> account for the two
       <code>EXPO_PUBLIC_METRON_*</code> variables. OpenLibrary needs no credentials. Barcode
       scanning needs a physical device with a camera — the simulator/emulator can exercise every
-      other flow (search, manual entry, increment, read history).
+      other flow (search, manual entry, mark as read, read history).
     </p>
   </div>
 </section>

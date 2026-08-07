@@ -2,23 +2,37 @@ import { Image } from 'expo-image';
 import { Stack, useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useCallback, useState } from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Alert, ScrollView, StyleSheet, View } from 'react-native';
 
 import { TerminalButton } from '@/components/terminal-button';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
-import {
-  deleteComic,
-  getComic,
-  logComicAsRead,
-  markAsRead,
-  markAsReading,
-  updateComicToNextIssue,
-} from '@/db/repository';
+import { deleteComic, getComic, insertComic, markAsRead, markAsReading } from '@/db/repository';
 import { useTheme } from '@/hooks/use-theme';
-import { getNextIssue, NoSeriesLinkError } from '@/services/comics';
+import { getNextIssue, NoSeriesLinkError, type ComicMatch } from '@/services/comics';
 import type { TrackedComic } from '@/types/comic';
+
+type NextIssueCheck =
+  | { status: 'found'; match: ComicMatch }
+  | { status: 'none' }
+  | { status: 'unsupported' };
+
+async function resolveNextIssue(comic: TrackedComic): Promise<NextIssueCheck> {
+  try {
+    const next = await getNextIssue(comic);
+    return next ? { status: 'found', match: next } : { status: 'none' };
+  } catch (e) {
+    if (e instanceof NoSeriesLinkError) return { status: 'unsupported' };
+    throw e;
+  }
+}
+
+function noNextIssueMessage(status: 'none' | 'unsupported') {
+  return status === 'none'
+    ? 'No newer issue yet — you’re caught up.'
+    : "Can't check for new issues (no linked series).";
+}
 
 export default function ComicDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -28,8 +42,7 @@ export default function ComicDetailScreen() {
 
   const [comic, setComic] = useState<TrackedComic | null>(null);
   const [loading, setLoading] = useState(true);
-  const [incrementing, setIncrementing] = useState(false);
-  const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const [checking, setChecking] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -44,39 +57,89 @@ export default function ComicDetailScreen() {
     }, [load])
   );
 
-  async function handleIncrement() {
+  async function handleMarkAsRead() {
     if (!comic) return;
-    setIncrementing(true);
-    setStatusMessage(null);
+
+    if (comic.type !== 'issue') {
+      await markAsRead(db, comic.id);
+      router.back();
+      return;
+    }
+
+    setChecking(true);
     try {
-      const next = await getNextIssue(comic);
-      if (!next) {
-        setStatusMessage('No newer issue yet — you’re caught up.');
+      const check = await resolveNextIssue(comic);
+
+      if (check.status === 'found') {
+        Alert.alert(`New issue: ${check.match.title}`, 'Add it to Current Reading?', [
+          {
+            text: 'No',
+            style: 'cancel',
+            onPress: async () => {
+              await markAsRead(db, comic.id);
+              router.back();
+            },
+          },
+          {
+            text: 'Yes',
+            onPress: async () => {
+              await markAsRead(db, comic.id);
+              await insertComic(db, check.match);
+              router.back();
+            },
+          },
+        ]);
         return;
       }
-      await logComicAsRead(db, comic);
-      await updateComicToNextIssue(db, comic.id, next);
-      await load();
+
+      Alert.alert('Marked as Read', noNextIssueMessage(check.status), [
+        {
+          text: 'OK',
+          onPress: async () => {
+            await markAsRead(db, comic.id);
+            router.back();
+          },
+        },
+      ]);
     } catch (e) {
-      if (e instanceof NoSeriesLinkError) {
-        setStatusMessage("Can't auto-increment this item (no linked series).");
-      } else {
-        setStatusMessage(e instanceof Error ? e.message : String(e));
-      }
+      Alert.alert('Something went wrong', e instanceof Error ? e.message : String(e));
     } finally {
-      setIncrementing(false);
+      setChecking(false);
     }
   }
 
-  async function handleToggleRead() {
+  async function handleCheckNextIssue() {
     if (!comic) return;
-    if (comic.status === 'reading') {
-      await markAsRead(db, comic.id);
-      router.back();
-    } else {
-      await markAsReading(db, comic.id);
-      await load();
+    setChecking(true);
+    try {
+      const check = await resolveNextIssue(comic);
+
+      if (check.status === 'found') {
+        Alert.alert(`New issue: ${check.match.title}`, 'Add it to Current Reading?', [
+          { text: 'No', style: 'cancel' },
+          {
+            text: 'Yes',
+            onPress: async () => {
+              await insertComic(db, check.match);
+              Alert.alert('Added', `${check.match.title} added to Current Reading.`);
+            },
+          },
+        ]);
+        return;
+      }
+
+      Alert.alert('No New Issue', noNextIssueMessage(check.status));
+    } catch (e) {
+      Alert.alert('Something went wrong', e instanceof Error ? e.message : String(e));
+    } finally {
+      setChecking(false);
     }
+  }
+
+  async function handleMoveBackToReading() {
+    if (!comic) return;
+    await markAsReading(db, comic.id);
+    await load();
   }
 
   async function handleRemove() {
@@ -135,30 +198,36 @@ export default function ComicDetailScreen() {
           </ThemedText>
         )}
 
-        {comic.type === 'issue' && comic.status === 'reading' && (
+        {comic.status === 'reading' && (
           <View style={styles.section}>
             <TerminalButton
-              label="Increment to Next Issue"
+              label="Mark as Read"
               variant="solid"
               fullWidth
-              loading={incrementing}
-              onPress={handleIncrement}
+              loading={checking}
+              onPress={handleMarkAsRead}
             />
-            {statusMessage && (
-              <ThemedText type="small" themeColor="textMuted" style={styles.statusMessage}>
-                {statusMessage}
-              </ThemedText>
-            )}
           </View>
         )}
 
-        <View style={styles.section}>
-          <TerminalButton
-            label={comic.status === 'reading' ? 'Mark as Read' : 'Move back to Current Reading'}
-            fullWidth
-            onPress={handleToggleRead}
-          />
-        </View>
+        {comic.status === 'read' && (
+          <>
+            {comic.type === 'issue' && (
+              <View style={styles.section}>
+                <TerminalButton
+                  label="Check for Next Issue"
+                  variant="solid"
+                  fullWidth
+                  loading={checking}
+                  onPress={handleCheckNextIssue}
+                />
+              </View>
+            )}
+            <View style={styles.section}>
+              <TerminalButton label="Move back to Current Reading" fullWidth onPress={handleMoveBackToReading} />
+            </View>
+          </>
+        )}
 
         <View style={styles.section}>
           <TerminalButton label="Remove" variant="ghost" fullWidth onPress={handleRemove} />
@@ -199,9 +268,5 @@ const styles = StyleSheet.create({
   },
   section: {
     marginTop: Spacing.three,
-  },
-  statusMessage: {
-    textAlign: 'center',
-    marginTop: Spacing.two,
   },
 });

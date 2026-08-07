@@ -1,6 +1,6 @@
 # Longbox
 
-A personal comic-reading tracker built with Expo/React Native. Scan or search for a comic, track what you're currently reading, increment to the next issue with real data pulled live from a comic database, and keep a browsable history of everything you've finished. (Formerly named Comic Track.)
+A personal comic-reading tracker built with Expo/React Native. Scan or search for a comic, track what you're currently reading, and mark it as read when you're done — Longbox checks the real next issue for you and offers to add it, instead of a spreadsheet you forget to update. (Formerly named Comic Track.)
 
 ## Screenshots
 
@@ -20,8 +20,8 @@ A personal comic-reading tracker built with Expo/React Native. Scan or search fo
   - **Enter code manually** — type a UPC/ISBN directly, with a separate field for the small supplemental barcode single issues need for an exact match.
   - **Search by title** — text search against Metron's series database.
   - Every path lands on a **Confirm** screen before anything is saved.
-- **Increment to next issue** — re-queries the API for the real next issue (new cover, release date, issue number) rather than just bumping a local counter, and automatically logs the issue you just finished into Comics Read.
-- **Comics Read** — full history with search, and three sort modes: Recent, A–Z, and a collapsible **By Series** grouping.
+- **Mark as Read** — for single issues, checks the API for a real next issue first. If one exists, you're asked whether to add it to Current Reading; either way the current issue moves to Comics Read. No next issue yet (or a TPB, which has no "next issue" concept) just marks it read directly.
+- **Comics Read** — full history with search, three sort modes (Recent, A–Z, a collapsible **By Series** grouping), and a **Check for Next Issue** button on every single issue so you can catch a new release without re-scanning or re-searching.
 
 ## How it's built
 
@@ -53,4 +53,4 @@ npx expo start
 
 Requires a free [Metron](https://metron.cloud) account for `EXPO_PUBLIC_METRON_USERNAME`/`EXPO_PUBLIC_METRON_PASSWORD`. OpenLibrary needs no credentials. `EXPO_PUBLIC_GOOGLE_BOOKS_API_KEY` is optional — only raises the fallback's rate limit, the app works without it.
 
-Barcode scanning needs a physical device with a camera — Expo Go on iOS or Android both work; the simulator/emulator can exercise every other flow (search, manual entry, increment, read history).
+Barcode scanning needs a physical device with a camera — Expo Go on iOS or Android both work; the simulator/emulator can exercise every other flow (search, manual entry, mark as read, read history).

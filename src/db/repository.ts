@@ -93,52 +93,6 @@ export async function insertComic(db: SQLiteDatabase, match: ComicMatch, scanned
   return id;
 }
 
-export async function logComicAsRead(db: SQLiteDatabase, comic: TrackedComic): Promise<void> {
-  const id = globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-  const now = new Date().toISOString();
-
-  await db.runAsync(
-    `INSERT INTO tracked_comics (
-      id, type, status, title, series_title, cover_image_url, release_date, author, issue_number,
-      source, metron_series_id, metron_issue_id, isbn, scanned_code, date_added, date_read, updated_at
-    ) VALUES (?, ?, 'read', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    id,
-    comic.type,
-    comic.title,
-    comic.seriesTitle ?? null,
-    comic.coverImageUrl ?? null,
-    comic.releaseDate ?? null,
-    comic.author ?? null,
-    comic.issueNumber ?? null,
-    comic.source,
-    comic.metronSeriesId ?? null,
-    comic.metronIssueId ?? null,
-    comic.isbn ?? null,
-    comic.scannedCode ?? null,
-    now,
-    now,
-    now
-  );
-}
-
-export async function updateComicToNextIssue(db: SQLiteDatabase, id: string, nextMatch: ComicMatch): Promise<void> {
-  const now = new Date().toISOString();
-  await db.runAsync(
-    `UPDATE tracked_comics SET
-      title = ?, cover_image_url = ?, release_date = ?, author = ?, issue_number = ?,
-      metron_issue_id = ?, updated_at = ?
-    WHERE id = ?`,
-    nextMatch.title,
-    nextMatch.coverImageUrl ?? null,
-    nextMatch.releaseDate ?? null,
-    nextMatch.author ?? null,
-    nextMatch.issueNumber ?? null,
-    nextMatch.sourceIds.metronIssueId ?? null,
-    now,
-    id
-  );
-}
-
 export async function markAsRead(db: SQLiteDatabase, id: string): Promise<void> {
   const now = new Date().toISOString();
   await db.runAsync(

@@ -137,7 +137,7 @@ export default function ComicsReadScreen() {
         {!loading && !error && comics.length === 0 && (
           <View style={styles.empty}>
             <ThemedText type="default" themeColor="textMuted" style={styles.message}>
-              NOTHING FILED YET — comics you mark or increment past land here.
+              NOTHING FILED YET — comics you mark as read land here.
             </ThemedText>
           </View>
         )}
@@ -231,8 +231,8 @@ const styles = StyleSheet.create({
   },
   sectionArrow: {
     width: Spacing.four,
-    fontSize: 22,
-    lineHeight: 22,
+    fontSize: 26,
+    lineHeight: 26,
   },
   empty: {
     paddingHorizontal: Spacing.three,
