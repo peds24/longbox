@@ -1,40 +1,39 @@
-import { Link } from 'expo-router';
-import { FlatList, Pressable, StyleSheet, View } from 'react-native';
+import { useRouter } from 'expo-router';
+import { FlatList, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ComicCard } from '@/components/comic-card';
+import { TerminalButton } from '@/components/terminal-button';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import { useComicsList } from '@/hooks/use-comics';
-import { useTheme } from '@/hooks/use-theme';
 
 export default function CurrentReadingScreen() {
   const { comics, loading, error, refetch } = useComicsList('reading');
-  const theme = useTheme();
+  const router = useRouter();
 
   return (
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.safeArea} edges={['top']}>
         <View style={styles.header}>
-          <ThemedText type="subtitle">Current Reading</ThemedText>
-          <Link href="/add" asChild>
-            <Pressable style={StyleSheet.flatten([styles.addButton, { backgroundColor: theme.backgroundElement }])}>
-              <ThemedText type="smallBold">+ Add</ThemedText>
-            </Pressable>
-          </Link>
+          <View>
+            <ThemedText type="prompt">~/reading$</ThemedText>
+            <ThemedText type="subtitle">CURRENT</ThemedText>
+          </View>
+          <TerminalButton label="+ Add" variant="solid" size="sm" onPress={() => router.push('/add')} />
         </View>
 
         {error && (
-          <ThemedText type="small" themeColor="textSecondary" style={styles.message}>
+          <ThemedText type="small" themeColor="textMuted" style={styles.message}>
             Couldn&apos;t load your comics: {error}
           </ThemedText>
         )}
 
         {!loading && !error && comics.length === 0 && (
           <View style={styles.empty}>
-            <ThemedText type="default" themeColor="textSecondary" style={styles.message}>
-              Nothing here yet. Tap + Add to scan or search for a comic.
+            <ThemedText type="default" themeColor="textMuted" style={styles.message}>
+              LONGBOX EMPTY — tap + Add to file your first comic.
             </ThemedText>
           </View>
         )}
@@ -62,14 +61,10 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'flex-end',
     paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.three,
-  },
-  addButton: {
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.two,
-    borderRadius: Spacing.four,
+    paddingTop: Spacing.three,
+    paddingBottom: Spacing.two,
   },
   list: {
     paddingHorizontal: Spacing.three,

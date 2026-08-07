@@ -1,55 +1,28 @@
-/**
- * Below are the colors that are used in the app. The colors are defined in the light and dark mode.
- * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
- */
-
-import '@/global.css';
-
 import { Platform } from 'react-native';
 
+/**
+ * Longbox is a single dark "terminal" theme — there is no light mode, matching
+ * a real terminal. Values match the Longbox mockup: https://claude.ai/code/artifact/a43fc1fb-2758-41b4-b4f2-854b7137c3da
+ * (Yellow-Orange accent option, #FCB001).
+ */
 export const Colors = {
-  light: {
-    text: '#000000',
-    background: '#ffffff',
-    backgroundElement: '#F0F0F3',
-    backgroundSelected: '#E0E1E6',
-    textSecondary: '#60646C',
-  },
-  dark: {
-    text: '#ffffff',
-    background: '#000000',
-    backgroundElement: '#212225',
-    backgroundSelected: '#2E3135',
-    textSecondary: '#B0B4BA',
-  },
+  bg: '#0B0902',
+  surface: '#171106',
+  border: '#3A2C0E',
+  text: '#F5EAD4',
+  textMuted: '#A6935F',
+  accent: '#FCB001',
+  accentInk: '#1F1500',
+  success: '#43D17A',
+  danger: '#F2564B',
 } as const;
 
-export type ThemeColor = keyof typeof Colors.light & keyof typeof Colors.dark;
+export type ThemeColor = keyof typeof Colors;
 
-export const Fonts = Platform.select({
-  ios: {
-    /** iOS `UIFontDescriptorSystemDesignDefault` */
-    sans: 'system-ui',
-    /** iOS `UIFontDescriptorSystemDesignSerif` */
-    serif: 'ui-serif',
-    /** iOS `UIFontDescriptorSystemDesignRounded` */
-    rounded: 'ui-rounded',
-    /** iOS `UIFontDescriptorSystemDesignMonospaced` */
-    mono: 'ui-monospace',
-  },
-  default: {
-    sans: 'normal',
-    serif: 'serif',
-    rounded: 'normal',
-    mono: 'monospace',
-  },
-  web: {
-    sans: 'var(--font-display)',
-    serif: 'var(--font-serif)',
-    rounded: 'var(--font-rounded)',
-    mono: 'var(--font-mono)',
-  },
-});
+export const Fonts = {
+  mono: 'SpaceMono_400Regular',
+  monoBold: 'SpaceMono_700Bold',
+} as const;
 
 export const Spacing = {
   half: 2,
@@ -60,6 +33,8 @@ export const Spacing = {
   five: 32,
   six: 64,
 } as const;
+
+export const Radius = 0;
 
 export const BottomTabInset = Platform.select({ ios: 50, android: 80 }) ?? 0;
 export const MaxContentWidth = 800;

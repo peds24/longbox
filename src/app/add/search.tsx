@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { TerminalButton } from '@/components/terminal-button';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
@@ -53,33 +54,32 @@ export default function SearchScreen() {
   return (
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.safeArea} edges={['bottom']}>
+        <ThemedText type="prompt" style={styles.prompt}>
+          ~/add/search$
+        </ThemedText>
         <View style={styles.searchRow}>
           <TextInput
             value={query}
             onChangeText={setQuery}
             onSubmitEditing={runSearch}
-            placeholder="Series title, e.g. Batman"
-            placeholderTextColor={theme.textSecondary}
-            style={[styles.input, { color: theme.text, backgroundColor: theme.backgroundElement }]}
+            placeholder="series title, e.g. Batman"
+            placeholderTextColor={theme.textMuted}
+            style={[styles.input, { color: theme.text, backgroundColor: theme.surface, borderColor: theme.border }]}
             returnKeyType="search"
           />
-          <Pressable
-            onPress={runSearch}
-            style={[styles.searchButton, { backgroundColor: theme.backgroundElement }]}>
-            <ThemedText type="smallBold">Search</ThemedText>
-          </Pressable>
+          <TerminalButton label="Search" variant="solid" onPress={runSearch} />
         </View>
 
-        {searching && <ActivityIndicator style={styles.spinner} />}
+        {searching && <ActivityIndicator style={styles.spinner} color={theme.accent} />}
 
         {error && (
-          <ThemedText type="small" themeColor="textSecondary" style={styles.message}>
+          <ThemedText type="small" themeColor="textMuted" style={styles.message}>
             {error}
           </ThemedText>
         )}
 
         {!searching && !error && hasSearched && results.length === 0 && (
-          <ThemedText type="small" themeColor="textSecondary" style={styles.message}>
+          <ThemedText type="small" themeColor="textMuted" style={styles.message}>
             No series found for &quot;{query.trim()}&quot;.
           </ThemedText>
         )}
@@ -90,11 +90,11 @@ export default function SearchScreen() {
           contentContainerStyle={styles.list}
           renderItem={({ item }) => (
             <Pressable onPress={() => pickSeries(item)} disabled={resolvingId !== null}>
-              <ThemedView type="backgroundElement" style={styles.resultRow}>
+              <ThemedView type="surface" style={[styles.resultRow, { borderColor: theme.border }]}>
                 <ThemedText type="default" style={styles.resultText}>
                   {item.series}
                 </ThemedText>
-                {resolvingId === item.id && <ActivityIndicator />}
+                {resolvingId === item.id && <ActivityIndicator color={theme.accent} />}
               </ThemedView>
             </Pressable>
           )}
@@ -111,6 +111,10 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
   },
+  prompt: {
+    paddingHorizontal: Spacing.three,
+    paddingTop: Spacing.three,
+  },
   searchRow: {
     flexDirection: 'row',
     gap: Spacing.two,
@@ -118,14 +122,9 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    borderRadius: Spacing.two,
+    borderWidth: 1,
     paddingHorizontal: Spacing.three,
     paddingVertical: Spacing.two,
-  },
-  searchButton: {
-    justifyContent: 'center',
-    paddingHorizontal: Spacing.three,
-    borderRadius: Spacing.two,
   },
   spinner: {
     marginTop: Spacing.three,
@@ -144,7 +143,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: Spacing.three,
-    borderRadius: Spacing.three,
+    borderWidth: 1,
   },
   resultText: {
     flex: 1,

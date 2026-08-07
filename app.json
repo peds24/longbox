@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "Comic Track",
-    "slug": "comic-track",
+    "name": "Longbox",
+    "slug": "longbox",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "comictrack",
+    "scheme": "longbox",
     "userInterfaceStyle": "automatic",
     "ios": {
       "icon": "./assets/expo.icon"
@@ -37,7 +37,7 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "Allow Comic Track to access your camera to scan comic barcodes."
+          "cameraPermission": "Allow Longbox to access your camera to scan comic barcodes."
         }
       ]
     ],

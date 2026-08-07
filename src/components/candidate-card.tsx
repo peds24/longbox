@@ -21,24 +21,36 @@ export function CandidateCard({
   return (
     <Pressable onPress={onPress} style={({ pressed }) => [pressed && styles.pressed]}>
       <ThemedView
-        type="backgroundElement"
-        style={[styles.card, selected && { borderColor: theme.text, borderWidth: 2 }]}>
-        <Image source={match.coverImageUrl} style={styles.cover} contentFit="cover" transition={150} />
+        type="surface"
+        style={[styles.card, { borderColor: selected ? theme.accent : theme.border }]}>
+        <Image
+          source={match.coverImageUrl}
+          style={[styles.cover, { borderColor: theme.border }]}
+          contentFit="cover"
+          transition={150}
+        />
         <View style={styles.info}>
-          <ThemedText type="smallBold" numberOfLines={2}>
-            {match.title}
-          </ThemedText>
+          <View style={styles.titleRow}>
+            <ThemedText type="smallBold" numberOfLines={2} style={styles.title}>
+              {match.title}
+            </ThemedText>
+            {match.issueNumber && (
+              <ThemedText type="small" style={{ color: theme.accent }}>
+                [#{match.issueNumber}]
+              </ThemedText>
+            )}
+          </View>
           {match.author && (
-            <ThemedText type="small" themeColor="textSecondary" numberOfLines={1}>
+            <ThemedText type="small" themeColor="textMuted" numberOfLines={1}>
               {match.author}
             </ThemedText>
           )}
           {match.releaseDate && (
-            <ThemedText type="small" themeColor="textSecondary">
+            <ThemedText type="small" themeColor="textMuted">
               {match.releaseDate}
             </ThemedText>
           )}
-          <ThemedText type="small" themeColor="textSecondary">
+          <ThemedText type="small" themeColor="textMuted">
             {match.type === 'issue' ? 'Single issue' : 'Trade paperback'} · via {match.source}
           </ThemedText>
         </View>
@@ -54,19 +66,26 @@ const styles = StyleSheet.create({
   card: {
     flexDirection: 'row',
     gap: Spacing.three,
-    padding: Spacing.three,
-    borderRadius: Spacing.three,
+    padding: Spacing.two + 2,
     borderWidth: 2,
-    borderColor: 'transparent',
   },
   cover: {
-    width: 64,
-    height: 96,
-    borderRadius: Spacing.one,
+    width: 56,
+    height: 84,
+    borderWidth: 1,
   },
   info: {
     flex: 1,
     gap: Spacing.half,
     justifyContent: 'center',
+    minWidth: 0,
+  },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    gap: Spacing.two,
+  },
+  title: {
+    flexShrink: 1,
   },
 });
