@@ -1,15 +1,15 @@
 import { useRouter } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useState } from 'react';
-import { FlatList, Pressable, StyleSheet, View } from 'react-native';
+import { FlatList, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { CandidateCard } from '@/components/candidate-card';
+import { TerminalButton } from '@/components/terminal-button';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import { insertComic } from '@/db/repository';
-import { useTheme } from '@/hooks/use-theme';
 import { usePendingMatch } from '@/state/pending-match';
 
 export default function ConfirmScreen() {
@@ -19,7 +19,6 @@ export default function ConfirmScreen() {
   const [error, setError] = useState<string | null>(null);
   const db = useSQLiteContext();
   const router = useRouter();
-  const theme = useTheme();
 
   const selected = matches[selectedIndex];
 
@@ -53,8 +52,11 @@ export default function ConfirmScreen() {
   return (
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.safeArea} edges={['bottom']}>
+        <ThemedText type="prompt" style={styles.prompt}>
+          ~/add/confirm$
+        </ThemedText>
         {matches.length > 1 && (
-          <ThemedText type="small" themeColor="textSecondary" style={styles.hint}>
+          <ThemedText type="small" themeColor="textMuted" style={styles.hint}>
             Multiple matches found — pick the right one:
           </ThemedText>
         )}
@@ -74,16 +76,17 @@ export default function ConfirmScreen() {
 
         <View style={styles.footer}>
           {error && (
-            <ThemedText type="small" themeColor="textSecondary" style={styles.hint}>
+            <ThemedText type="small" themeColor="textMuted" style={styles.hint}>
               {error}
             </ThemedText>
           )}
-          <Pressable
+          <TerminalButton
+            label={saving ? 'Adding…' : 'Add to Current Reading'}
+            variant="solid"
+            fullWidth
+            loading={saving}
             onPress={confirm}
-            disabled={saving}
-            style={[styles.confirmButton, { backgroundColor: theme.backgroundElement }]}>
-            <ThemedText type="smallBold">{saving ? 'Adding…' : 'Add to Current Reading'}</ThemedText>
-          </Pressable>
+          />
         </View>
       </SafeAreaView>
     </ThemedView>
@@ -97,9 +100,13 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
   },
-  hint: {
+  prompt: {
     paddingHorizontal: Spacing.three,
     paddingTop: Spacing.three,
+  },
+  hint: {
+    paddingHorizontal: Spacing.three,
+    paddingTop: Spacing.two,
   },
   list: {
     padding: Spacing.three,
@@ -107,11 +114,6 @@ const styles = StyleSheet.create({
   },
   footer: {
     padding: Spacing.three,
-  },
-  confirmButton: {
-    alignItems: 'center',
-    paddingVertical: Spacing.three,
-    borderRadius: Spacing.three,
   },
   message: {
     textAlign: 'center',

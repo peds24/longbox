@@ -1,8 +1,6 @@
-# Comic Track
+# Longbox
 
-A personal comic-reading tracker built with Expo/React Native. Scan or search for a comic, track what you're currently reading, increment to the next issue with real data pulled live from a comic database, and keep a browsable history of everything you've finished.
-
-No pixel-art or terminal theming is shipped in the app yet — see [Design](#design) below for where that's headed.
+A personal comic-reading tracker built with Expo/React Native. Scan or search for a comic, track what you're currently reading, increment to the next issue with real data pulled live from a comic database, and keep a browsable history of everything you've finished. (Formerly named Comic Track.)
 
 ## Screenshots
 
@@ -37,7 +35,7 @@ No pixel-art or terminal theming is shipped in the app yet — see [Design](#des
 
 ## Design
 
-The current app uses bare system styling. A proper visual identity — an "orange terminal" theme (real bundled monospace font, comic cards styled as a directory listing, section headers as shell prompts) — is being designed on the `design/terminal-theme` branch before any component code changes. Live interactive mockup, including an accent-color switcher (green/blue/red/yellow-orange/purple):
+Longbox uses an "orange terminal" theme: a bundled monospace font (Space Mono), a single dark palette with a `#FCB001` accent, square corners, hairline borders, no shadows/gradients. Comic cards read like a directory listing; section headers read like a shell prompt. The full interactive mockup — including an accent-color switcher (green/blue/red/yellow-orange/purple) used to land on this direction — is here:
 
 **[Longbox terminal theme concept →](https://claude.ai/code/artifact/a43fc1fb-2758-41b4-b4f2-854b7137c3da)**
 

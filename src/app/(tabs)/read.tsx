@@ -85,68 +85,66 @@ export default function ComicsReadScreen() {
   const isGrouped = sortMode === 'series';
   const hasResults = searched.length > 0;
 
+  function sortChipStyle(active: boolean) {
+    return [styles.sortChip, { borderColor: active ? theme.accent : theme.border }];
+  }
+
   return (
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.safeArea} edges={['top']}>
         <View style={styles.header}>
-          <ThemedText type="subtitle">Comics Read</ThemedText>
+          <ThemedText type="prompt">~/read$</ThemedText>
+          <ThemedText type="subtitle">COMPLETED</ThemedText>
         </View>
 
         <View style={styles.controls}>
           <TextInput
             value={query}
             onChangeText={setQuery}
-            placeholder="Search title, series, or author"
-            placeholderTextColor={theme.textSecondary}
-            style={[styles.searchInput, { color: theme.text, backgroundColor: theme.backgroundElement }]}
+            placeholder="search title, series, author"
+            placeholderTextColor={theme.textMuted}
+            style={[styles.searchInput, { color: theme.text, backgroundColor: theme.surface, borderColor: theme.border }]}
           />
           <View style={styles.sortRow}>
-            <Pressable
-              onPress={() => setSortMode('recent')}
-              style={[
-                styles.sortChip,
-                { backgroundColor: sortMode === 'recent' ? theme.backgroundSelected : theme.backgroundElement },
-              ]}>
-              <ThemedText type="smallBold">Recent</ThemedText>
+            <Pressable onPress={() => setSortMode('recent')} style={sortChipStyle(sortMode === 'recent')}>
+              <ThemedText type="smallBold" style={{ color: sortMode === 'recent' ? theme.accent : theme.textMuted }}>
+                RECENT
+              </ThemedText>
             </Pressable>
             <Pressable
               onPress={() => setSortMode('alphabetical')}
-              style={[
-                styles.sortChip,
-                {
-                  backgroundColor: sortMode === 'alphabetical' ? theme.backgroundSelected : theme.backgroundElement,
-                },
-              ]}>
-              <ThemedText type="smallBold">A–Z</ThemedText>
+              style={sortChipStyle(sortMode === 'alphabetical')}>
+              <ThemedText
+                type="smallBold"
+                style={{ color: sortMode === 'alphabetical' ? theme.accent : theme.textMuted }}>
+                A–Z
+              </ThemedText>
             </Pressable>
-            <Pressable
-              onPress={() => setSortMode('series')}
-              style={[
-                styles.sortChip,
-                { backgroundColor: isGrouped ? theme.backgroundSelected : theme.backgroundElement },
-              ]}>
-              <ThemedText type="smallBold">By Series</ThemedText>
+            <Pressable onPress={() => setSortMode('series')} style={sortChipStyle(isGrouped)}>
+              <ThemedText type="smallBold" style={{ color: isGrouped ? theme.accent : theme.textMuted }}>
+                BY SERIES
+              </ThemedText>
             </Pressable>
           </View>
         </View>
 
         {error && (
-          <ThemedText type="small" themeColor="textSecondary" style={styles.message}>
+          <ThemedText type="small" themeColor="textMuted" style={styles.message}>
             Couldn&apos;t load your comics: {error}
           </ThemedText>
         )}
 
         {!loading && !error && comics.length === 0 && (
           <View style={styles.empty}>
-            <ThemedText type="default" themeColor="textSecondary" style={styles.message}>
-              Nothing marked as read yet.
+            <ThemedText type="default" themeColor="textMuted" style={styles.message}>
+              NOTHING FILED YET — comics you mark or increment past land here.
             </ThemedText>
           </View>
         )}
 
         {!loading && !error && comics.length > 0 && !hasResults && (
           <View style={styles.empty}>
-            <ThemedText type="default" themeColor="textSecondary" style={styles.message}>
+            <ThemedText type="default" themeColor="textMuted" style={styles.message}>
               No comics match &quot;{query.trim()}&quot;.
             </ThemedText>
           </View>
@@ -161,10 +159,10 @@ export default function ComicsReadScreen() {
               const collapsed = collapsedSeries.has(section.key);
               return (
                 <Pressable onPress={() => toggleSeries(section.key)} style={styles.sectionHeader}>
-                  <ThemedText type="small" style={styles.sectionArrow}>
+                  <ThemedText type="small" style={[styles.sectionArrow, { color: theme.accent }]}>
                     {collapsed ? '▸' : '▾'}
                   </ThemedText>
-                  <ThemedText type="smallBold">{section.title}</ThemedText>
+                  <ThemedText type="smallBold">{section.title.toUpperCase()}</ThemedText>
                 </Pressable>
               );
             }}
@@ -197,7 +195,8 @@ const styles = StyleSheet.create({
   },
   header: {
     paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.three,
+    paddingTop: Spacing.three,
+    paddingBottom: Spacing.two,
   },
   controls: {
     paddingHorizontal: Spacing.three,
@@ -205,7 +204,7 @@ const styles = StyleSheet.create({
     gap: Spacing.two,
   },
   searchInput: {
-    borderRadius: Spacing.two,
+    borderWidth: 1,
     paddingHorizontal: Spacing.three,
     paddingVertical: Spacing.two,
   },
@@ -215,8 +214,8 @@ const styles = StyleSheet.create({
   },
   sortChip: {
     paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.one,
-    borderRadius: Spacing.four,
+    paddingVertical: Spacing.one + 2,
+    borderWidth: 1,
   },
   list: {
     paddingHorizontal: Spacing.three,
