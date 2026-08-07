@@ -4,6 +4,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { STATUS_LABELS, statusColor } from '@/constants/status';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import type { TrackedComic } from '@/types/comic';
@@ -49,15 +50,9 @@ export function ComicCard({ comic }: { comic: TrackedComic }) {
                 {meta}
               </ThemedText>
             )}
-            <View
-              style={[
-                styles.badge,
-                { borderColor: comic.status === 'read' ? theme.success : theme.accent },
-              ]}>
-              <ThemedText
-                type="small"
-                style={{ color: comic.status === 'read' ? theme.success : theme.accent }}>
-                {comic.status === 'read' ? 'READ' : 'READING'}
+            <View style={[styles.badge, { borderColor: statusColor(comic.status) }]}>
+              <ThemedText type="small" style={{ color: statusColor(comic.status) }}>
+                {STATUS_LABELS[comic.status]}
               </ThemedText>
             </View>
           </View>

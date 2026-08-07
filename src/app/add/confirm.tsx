@@ -29,7 +29,9 @@ export default function ConfirmScreen() {
     try {
       await insertComic(db, selected, scannedCode);
       clear();
-      router.dismissTo('/');
+      // Adds land in the backlog, so return to the Comic Box on that filter — dismissing to
+      // the Reading tab would drop the user on a screen that doesn't show what they just added.
+      router.dismissTo('/collection?filter=backlog');
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
@@ -81,7 +83,7 @@ export default function ConfirmScreen() {
             </ThemedText>
           )}
           <TerminalButton
-            label={saving ? 'Adding…' : 'Add to Current Reading'}
+            label={saving ? 'Adding…' : 'Add to Backlog'}
             variant="solid"
             fullWidth
             loading={saving}

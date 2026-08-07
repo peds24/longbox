@@ -1,6 +1,6 @@
 # Longbox
 
-A personal comic-reading tracker built with Expo/React Native. Scan or search for a comic, track what you're currently reading, and mark it as read when you're done — Longbox checks the real next issue for you and offers to add it, instead of a spreadsheet you forget to update. (Formerly named Comic Track.)
+A personal comic-reading tracker built with Expo/React Native. Scan or search for a comic to file it in your backlog, pull it out when you start reading, and mark it as read when you're done — Longbox checks the real next issue for you and offers to add it, instead of a spreadsheet you forget to update. (Formerly named Comic Track.)
 
 ## Screenshots
 
@@ -14,14 +14,17 @@ A personal comic-reading tracker built with Expo/React Native. Scan or search fo
 
 ## Features
 
-- **Current Reading**: active series/issues at a glance — cover, title, author, release date, issue number.
+- **Three states**: every comic is **Backlog**, **Reading**, or **Read**. Backlog is the default — owning a comic and having read it are different facts, so a comic you've bought but not opened has somewhere to live that isn't "currently reading."
+- **Current Reading**: what you actually have in hand right now — cover, title, author, release date, issue number.
+- **Comic Box**: the whole collection in one place, filterable by state (All / Backlog / Reading / Read), with search and three sort modes (Recent, A–Z, a collapsible **By Series** grouping).
 - **Add a comic** three ways:
   - **Scan barcode** — camera-based UPC (single issues) or ISBN (trade paperbacks) scan.
   - **Enter code manually** — type a UPC/ISBN directly, with a separate field for the small supplemental barcode single issues need for an exact match.
   - **Search by title** — text search against Metron's series database.
-  - Every path lands on a **Confirm** screen before anything is saved.
-- **Mark as Read** — for single issues, checks the API for a real next issue first. If one exists, you're asked whether to add it to Current Reading; either way the current issue moves to Comics Read. No next issue yet (or a TPB, which has no "next issue" concept) just marks it read directly.
-- **Comics Read** — full history with search, three sort modes (Recent, A–Z, a collapsible **By Series** grouping), and a **Check for Next Issue** button on every single issue so you can catch a new release without re-scanning or re-searching.
+  - Every path lands on a **Confirm** screen before anything is saved, and adds land in the Backlog.
+- **Move between states** from any comic's detail screen: Start Reading, Mark as Read, Move to Backlog, Move back to Current Reading.
+- **Mark as Read** — for single issues, checks the API for a real next issue first. If one exists, you're asked whether to add it to your backlog; either way the current issue moves to Read. No next issue yet (or a TPB, which has no "next issue" concept) just marks it read directly.
+- **Check for Next Issue** — on every read single issue, so you can catch a new release without re-scanning or re-searching.
 
 ## How it's built
 

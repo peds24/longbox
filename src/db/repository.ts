@@ -45,17 +45,23 @@ function rowToComic(row: TrackedComicRow): TrackedComic {
   };
 }
 
-export async function getReading(db: SQLiteDatabase): Promise<TrackedComic[]> {
-  const rows = await db.getAllAsync<TrackedComicRow>(
-    "SELECT * FROM tracked_comics WHERE status = 'reading' ORDER BY date_added DESC"
-  );
-  return rows.map(rowToComic);
+/**
+ * Read comics sort by when they were read; everything else by when it was filed.
+ * COALESCE keeps rows with a NULL date_read (possible for anything moved back out
+ * of 'read' in an older build) from sorting above genuinely recent reads.
+ */
+function orderClause(status: ComicStatus | 'all'): string {
+  return status === 'read' ? 'ORDER BY COALESCE(date_read, date_added) DESC' : 'ORDER BY date_added DESC';
 }
 
-export async function getRead(db: SQLiteDatabase): Promise<TrackedComic[]> {
-  const rows = await db.getAllAsync<TrackedComicRow>(
-    "SELECT * FROM tracked_comics WHERE status = 'read' ORDER BY date_read DESC"
-  );
+export async function getComics(db: SQLiteDatabase, status: ComicStatus | 'all'): Promise<TrackedComic[]> {
+  const rows =
+    status === 'all'
+      ? await db.getAllAsync<TrackedComicRow>(`SELECT * FROM tracked_comics ${orderClause(status)}`)
+      : await db.getAllAsync<TrackedComicRow>(
+          `SELECT * FROM tracked_comics WHERE status = ? ${orderClause(status)}`,
+          status
+        );
   return rows.map(rowToComic);
 }
 
@@ -64,7 +70,12 @@ export async function getComic(db: SQLiteDatabase, id: string): Promise<TrackedC
   return row ? rowToComic(row) : null;
 }
 
-export async function insertComic(db: SQLiteDatabase, match: ComicMatch, scannedCode?: string): Promise<string> {
+export async function insertComic(
+  db: SQLiteDatabase,
+  match: ComicMatch,
+  scannedCode?: string,
+  status: ComicStatus = 'backlog'
+): Promise<string> {
   const id = globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`;
   const now = new Date().toISOString();
 
@@ -72,9 +83,10 @@ export async function insertComic(db: SQLiteDatabase, match: ComicMatch, scanned
     `INSERT INTO tracked_comics (
       id, type, status, title, series_title, cover_image_url, release_date, author, issue_number,
       source, metron_series_id, metron_issue_id, isbn, scanned_code, date_added, date_read, updated_at
-    ) VALUES (?, ?, 'reading', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, ?)`,
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, ?)`,
     id,
     match.type,
+    status,
     match.title,
     match.seriesTitle ?? null,
     match.coverImageUrl ?? null,
@@ -93,20 +105,13 @@ export async function insertComic(db: SQLiteDatabase, match: ComicMatch, scanned
   return id;
 }
 
-export async function markAsRead(db: SQLiteDatabase, id: string): Promise<void> {
+/** Moving a comic out of 'read' clears date_read, so it can't claim a read date it no longer has. */
+export async function setStatus(db: SQLiteDatabase, id: string, status: ComicStatus): Promise<void> {
   const now = new Date().toISOString();
   await db.runAsync(
-    "UPDATE tracked_comics SET status = 'read', date_read = ?, updated_at = ? WHERE id = ?",
-    now,
-    now,
-    id
-  );
-}
-
-export async function markAsReading(db: SQLiteDatabase, id: string): Promise<void> {
-  const now = new Date().toISOString();
-  await db.runAsync(
-    "UPDATE tracked_comics SET status = 'reading', date_read = NULL, updated_at = ? WHERE id = ?",
+    'UPDATE tracked_comics SET status = ?, date_read = ?, updated_at = ? WHERE id = ?',
+    status,
+    status === 'read' ? now : null,
     now,
     id
   );

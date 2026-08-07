@@ -2,10 +2,12 @@ import { useFocusEffect } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useCallback, useState } from 'react';
 
-import { getRead, getReading } from '@/db/repository';
-import type { TrackedComic } from '@/types/comic';
+import { getComics } from '@/db/repository';
+import type { ComicStatus, TrackedComic } from '@/types/comic';
 
-export function useComicsList(status: 'reading' | 'read') {
+export type ComicsFilter = ComicStatus | 'all';
+
+export function useComicsList(status: ComicsFilter) {
   const db = useSQLiteContext();
   const [comics, setComics] = useState<TrackedComic[]>([]);
   const [loading, setLoading] = useState(true);
@@ -15,8 +17,7 @@ export function useComicsList(status: 'reading' | 'read') {
     setLoading(true);
     setError(null);
     try {
-      const rows = status === 'reading' ? await getReading(db) : await getRead(db);
-      setComics(rows);
+      setComics(await getComics(db, status));
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {

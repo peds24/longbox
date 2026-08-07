@@ -7,11 +7,12 @@ import { ActivityIndicator, Alert, ScrollView, StyleSheet, View } from 'react-na
 import { TerminalButton } from '@/components/terminal-button';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { STATUS_LABELS, statusColor } from '@/constants/status';
 import { Spacing } from '@/constants/theme';
-import { deleteComic, getComic, insertComic, markAsRead, markAsReading } from '@/db/repository';
+import { deleteComic, getComic, insertComic, setStatus } from '@/db/repository';
 import { useTheme } from '@/hooks/use-theme';
 import { getNextIssue, NoSeriesLinkError, type ComicMatch } from '@/services/comics';
-import type { TrackedComic } from '@/types/comic';
+import type { ComicStatus, TrackedComic } from '@/types/comic';
 
 type NextIssueCheck =
   | { status: 'found'; match: ComicMatch }
@@ -61,7 +62,7 @@ export default function ComicDetailScreen() {
     if (!comic) return;
 
     if (comic.type !== 'issue') {
-      await markAsRead(db, comic.id);
+      await setStatus(db, comic.id, 'read');
       router.back();
       return;
     }
@@ -71,19 +72,19 @@ export default function ComicDetailScreen() {
       const check = await resolveNextIssue(comic);
 
       if (check.status === 'found') {
-        Alert.alert(`New issue: ${check.match.title}`, 'Add it to Current Reading?', [
+        Alert.alert(`New issue: ${check.match.title}`, 'Add it to your backlog?', [
           {
             text: 'No',
             style: 'cancel',
             onPress: async () => {
-              await markAsRead(db, comic.id);
+              await setStatus(db, comic.id, 'read');
               router.back();
             },
           },
           {
             text: 'Yes',
             onPress: async () => {
-              await markAsRead(db, comic.id);
+              await setStatus(db, comic.id, 'read');
               await insertComic(db, check.match);
               router.back();
             },
@@ -96,7 +97,7 @@ export default function ComicDetailScreen() {
         {
           text: 'OK',
           onPress: async () => {
-            await markAsRead(db, comic.id);
+            await setStatus(db, comic.id, 'read');
             router.back();
           },
         },
@@ -115,13 +116,13 @@ export default function ComicDetailScreen() {
       const check = await resolveNextIssue(comic);
 
       if (check.status === 'found') {
-        Alert.alert(`New issue: ${check.match.title}`, 'Add it to Current Reading?', [
+        Alert.alert(`New issue: ${check.match.title}`, 'Add it to your backlog?', [
           { text: 'No', style: 'cancel' },
           {
             text: 'Yes',
             onPress: async () => {
               await insertComic(db, check.match);
-              Alert.alert('Added', `${check.match.title} added to Current Reading.`);
+              Alert.alert('Added', `${check.match.title} added to your backlog.`);
             },
           },
         ]);
@@ -136,9 +137,9 @@ export default function ComicDetailScreen() {
     }
   }
 
-  async function handleMoveBackToReading() {
+  async function handleMove(status: ComicStatus) {
     if (!comic) return;
-    await markAsReading(db, comic.id);
+    await setStatus(db, comic.id, status);
     await load();
   }
 
@@ -176,7 +177,7 @@ export default function ComicDetailScreen() {
           contentFit="cover"
         />
 
-        <ThemedText type="prompt">~/reading$ cat</ThemedText>
+        <ThemedText type="prompt">~/box$ cat</ThemedText>
         <View style={styles.titleRow}>
           <ThemedText type="subtitle" style={styles.title}>
             {comic.title}
@@ -186,6 +187,11 @@ export default function ComicDetailScreen() {
               [#{comic.issueNumber}]
             </ThemedText>
           )}
+        </View>
+        <View style={[styles.badge, { borderColor: statusColor(comic.status) }]}>
+          <ThemedText type="small" style={{ color: statusColor(comic.status) }}>
+            {STATUS_LABELS[comic.status]}
+          </ThemedText>
         </View>
         {comic.author && (
           <ThemedText type="default" themeColor="textMuted">
@@ -198,16 +204,37 @@ export default function ComicDetailScreen() {
           </ThemedText>
         )}
 
+        {comic.status === 'backlog' && (
+          <>
+            <View style={styles.section}>
+              <TerminalButton
+                label="Start Reading"
+                variant="solid"
+                fullWidth
+                onPress={() => handleMove('reading')}
+              />
+            </View>
+            <View style={styles.section}>
+              <TerminalButton label="Mark as Read" fullWidth loading={checking} onPress={handleMarkAsRead} />
+            </View>
+          </>
+        )}
+
         {comic.status === 'reading' && (
-          <View style={styles.section}>
-            <TerminalButton
-              label="Mark as Read"
-              variant="solid"
-              fullWidth
-              loading={checking}
-              onPress={handleMarkAsRead}
-            />
-          </View>
+          <>
+            <View style={styles.section}>
+              <TerminalButton
+                label="Mark as Read"
+                variant="solid"
+                fullWidth
+                loading={checking}
+                onPress={handleMarkAsRead}
+              />
+            </View>
+            <View style={styles.section}>
+              <TerminalButton label="Move to Backlog" fullWidth onPress={() => handleMove('backlog')} />
+            </View>
+          </>
         )}
 
         {comic.status === 'read' && (
@@ -224,7 +251,14 @@ export default function ComicDetailScreen() {
               </View>
             )}
             <View style={styles.section}>
-              <TerminalButton label="Move back to Current Reading" fullWidth onPress={handleMoveBackToReading} />
+              <TerminalButton
+                label="Move back to Current Reading"
+                fullWidth
+                onPress={() => handleMove('reading')}
+              />
+            </View>
+            <View style={styles.section}>
+              <TerminalButton label="Move to Backlog" fullWidth onPress={() => handleMove('backlog')} />
             </View>
           </>
         )}
@@ -265,6 +299,13 @@ const styles = StyleSheet.create({
   },
   title: {
     flexShrink: 1,
+  },
+  badge: {
+    alignSelf: 'flex-start',
+    borderWidth: 1,
+    paddingHorizontal: Spacing.two,
+    paddingVertical: 2,
+    marginTop: Spacing.one,
   },
   section: {
     marginTop: Spacing.three,
