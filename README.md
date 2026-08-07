@@ -62,13 +62,63 @@ npx expo start
 
 Requires a free [Metron](https://metron.cloud) account for `EXPO_PUBLIC_METRON_USERNAME`/`EXPO_PUBLIC_METRON_PASSWORD`. OpenLibrary needs no credentials. `EXPO_PUBLIC_GOOGLE_BOOKS_API_KEY` is optional — only raises the fallback's rate limit, the app works without it.
 
-Barcode scanning needs a physical device with a camera — Expo Go on iOS or Android both work; the simulator/emulator can exercise every other flow (search, manual entry, mark as read, read history).
+Barcode scanning needs a physical device with a camera — Expo Go on iOS or Android both work; the simulator/emulator can exercise every other flow (search, manual entry, moving comics between states, the Comic Box).
+
+## Running on Android
+
+### Physical device
+
+Install [Expo Go](https://play.google.com/store/apps/details?id=host.exp.exponent) from the Play Store, put the phone on the same Wi-Fi as the Mac, then:
+
+```bash
+npx expo start        # scan the QR code with Expo Go
+```
+
+If the phone and Mac are on networks that can't see each other (guest Wi-Fi, VPN, locked-down corporate LAN), route the connection through Expo's relay instead:
+
+```bash
+npx expo start --tunnel
+```
+
+Or skip the network entirely — plug the phone in over USB with debugging enabled and forward Metro's port to it:
+
+```bash
+adb devices                        # confirm the phone shows as "device", not "unauthorized"
+adb reverse tcp:8081 tcp:8081
+npx expo start                     # then open exp://127.0.0.1:8081 in Expo Go
+```
+
+### Emulator
+
+```bash
+~/Library/Android/sdk/emulator/emulator -list-avds     # see what AVDs exist
+~/Library/Android/sdk/emulator/emulator -avd Pixel_10  # boot one (blocks; use another shell)
+npm run android                                        # = expo start --android
+```
+
+`npm run android` launches Expo Go on the emulator itself, so **wait for the AVD to finish booting first** — running it too early fails with `Activity class {host.exp.exponent/...HomeActivity} does not exist`, which looks like a broken Expo Go install but is just a race. Poll for readiness with:
+
+```bash
+until adb shell getprop sys.boot_completed | grep -q 1; do sleep 3; done
+```
+
+If the emulator still can't reach Metro on the host's LAN IP, forward the port and open the dev URL by hand:
+
+```bash
+adb reverse tcp:8081 tcp:8081
+adb shell am start -a android.intent.action.VIEW -d "exp://127.0.0.1:8081" host.exp.exponent
+```
+
+Useful while working against the emulator: `adb exec-out screencap -p > shot.png` grabs a screenshot, and `adb shell input tap <x> <y>` drives the UI without touching the mouse.
 
 ## Building
 
 ```bash
-eas build --profile preview --platform android   # installable APK
+eas build --profile preview --platform android      # installable APK (internal distribution)
+eas build --profile production --platform android   # AAB for the Play Store, auto-increments versionCode
 ```
+
+The `preview` profile sets `"buildType": "apk"` in `eas.json` — that's what makes it an APK you can sideload rather than an AAB. Builds run on EAS servers; the CLI prints a download link when one finishes, and `eas build:list` finds earlier ones. Install it with `adb install <path>.apk`, or just open the link on the phone.
 
 `.env` covers local development only. It's gitignored, and EAS cloud builds upload just the git-tracked files, so a build that relied on it would bundle empty credentials and fail at the first Metron call with `MissingCredentialsError`. The credentials live as [EAS environment variables](https://docs.expo.dev/eas/environment-variables/) instead, and each build profile in `eas.json` names the environment it pulls from (`preview` → `preview`, `production` → `production`).
 
