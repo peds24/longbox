@@ -2,7 +2,7 @@ export const CREATE_TRACKED_COMICS_TABLE = `
 CREATE TABLE IF NOT EXISTS tracked_comics (
   id TEXT PRIMARY KEY NOT NULL,
   type TEXT NOT NULL CHECK (type IN ('issue', 'tpb')),
-  status TEXT NOT NULL CHECK (status IN ('reading', 'read')) DEFAULT 'reading',
+  status TEXT NOT NULL CHECK (status IN ('backlog', 'reading', 'read')) DEFAULT 'backlog',
 
   title TEXT NOT NULL,
   series_title TEXT,

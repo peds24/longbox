@@ -33,7 +33,7 @@ export default function CurrentReadingScreen() {
         {!loading && !error && comics.length === 0 && (
           <View style={styles.empty}>
             <ThemedText type="default" themeColor="textMuted" style={styles.message}>
-              LONGBOX EMPTY — tap + Add to file your first comic.
+              NOTHING IN HAND — start a comic from your backlog, or tap + Add to file a new one.
             </ThemedText>
           </View>
         )}

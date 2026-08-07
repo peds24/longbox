@@ -1,5 +1,5 @@
 export type ComicType = 'issue' | 'tpb';
-export type ComicStatus = 'reading' | 'read';
+export type ComicStatus = 'backlog' | 'reading' | 'read';
 export type ComicSource = 'metron' | 'openlibrary' | 'google_books' | 'manual';
 
 export interface TrackedComic {

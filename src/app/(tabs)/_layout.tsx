@@ -10,9 +10,9 @@ export default function TabLayout() {
         <NativeTabs.Trigger.Icon sf="book.fill" md="menu_book" />
       </NativeTabs.Trigger>
 
-      <NativeTabs.Trigger name="read">
-        <NativeTabs.Trigger.Label>Read</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon sf="checkmark.circle.fill" md="check_circle" />
+      <NativeTabs.Trigger name="collection">
+        <NativeTabs.Trigger.Label>Comic Box</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon sf="archivebox.fill" md="inventory_2" />
       </NativeTabs.Trigger>
     </NativeTabs>
   );
