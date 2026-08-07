@@ -1,0 +1,385 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Longbox — a terminal for your comics</title>
+<meta name="description" content="Longbox is a personal comic-reading tracker for Android and iOS. Scan or search a comic, track what you're reading, and increment to the next issue with real data pulled live from a comic database." />
+<link rel="icon" type="image/svg+xml" href="assets/longbox-mark.svg" />
+<link rel="icon" type="image/png" href="assets/favicon-32.png" sizes="32x32" />
+<meta property="og:title" content="Longbox — a terminal for your comics" />
+<meta property="og:description" content="Scan a comic, track what you're reading, increment to the next issue with real data. No spreadsheet." />
+<meta property="og:image" content="assets/longbox-mark.png" />
+<style>
+  @font-face {
+    font-family: 'Space Mono';
+    font-weight: 400;
+    font-style: normal;
+    src: url('assets/fonts/SpaceMono-Regular.ttf') format('truetype');
+    font-display: swap;
+  }
+  @font-face {
+    font-family: 'Space Mono';
+    font-weight: 700;
+    font-style: normal;
+    src: url('assets/fonts/SpaceMono-Bold.ttf') format('truetype');
+    font-display: swap;
+  }
+
+  :root {
+    --bg: #0b0902;
+    --surface: #171106;
+    --border: #3a2c0e;
+    --text: #f5ead4;
+    --text-muted: #a6935f;
+    --accent: #fcb001;
+    --accent-ink: #1f1500;
+    --success: #43d17a;
+    --danger: #f2564b;
+    --max: 1040px;
+  }
+
+  * { box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Space Mono', ui-monospace, monospace;
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  a { color: var(--accent); }
+
+  img { max-width: 100%; display: block; }
+
+  .wrap {
+    max-width: var(--max);
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  .eyebrow {
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    font-size: 12px;
+    color: var(--accent);
+    font-weight: 700;
+  }
+
+  /* ---------- Nav ---------- */
+  nav {
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 0;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 700;
+    font-size: 18px;
+    letter-spacing: 0.02em;
+  }
+  .brand svg { width: 28px; height: 28px; flex: none; }
+  .nav-links { display: flex; gap: 20px; font-size: 13px; }
+  .nav-links a { text-decoration: none; color: var(--text-muted); }
+  .nav-links a:hover { color: var(--accent); }
+
+  /* ---------- Hero ---------- */
+  .hero {
+    padding: 72px 0 56px;
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: 48px;
+    align-items: center;
+  }
+  .hero h1 {
+    font-size: 42px;
+    line-height: 1.15;
+    margin: 14px 0 20px;
+    letter-spacing: 0.01em;
+    text-wrap: balance;
+  }
+  .hero p {
+    color: var(--text-muted);
+    font-size: 15px;
+    max-width: 56ch;
+    margin: 0 0 28px;
+  }
+  .cta-row { display: flex; flex-wrap: wrap; gap: 12px; }
+  .btn {
+    display: inline-block;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    text-decoration: none;
+    padding: 14px 22px;
+    border: 1px solid var(--accent);
+    line-height: 1;
+  }
+  .btn.solid { background: var(--accent); color: var(--accent-ink); }
+  .btn.outline { color: var(--accent); }
+
+  .hero-mark {
+    border: 1px solid var(--border);
+    background: var(--surface);
+    padding: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .hero-mark svg { width: 100%; height: auto; max-width: 240px; }
+
+  /* ---------- Screen frames (showcase) ---------- */
+  section { padding: 56px 0; }
+  section.bordered-top { border-top: 1px solid var(--border); }
+  h2 { font-size: 22px; margin: 8px 0 32px; letter-spacing: 0.01em; }
+
+  .screens {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+  .screen {
+    border: 1px solid var(--border);
+    background: var(--surface);
+  }
+  .screen-bar {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+  .screen-bar b { color: var(--text); }
+  .screen img { width: 100%; }
+
+  /* ---------- Features ---------- */
+  .features {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+  }
+  .feature {
+    background: var(--bg);
+    padding: 24px;
+  }
+  .feature .prompt { color: var(--accent); font-size: 12px; margin-bottom: 8px; }
+  .feature h3 { margin: 0 0 8px; font-size: 15px; }
+  .feature p { margin: 0; color: var(--text-muted); font-size: 13px; }
+
+  /* ---------- Tech stack ---------- */
+  .stack-list { display: flex; flex-direction: column; gap: 0; border-top: 1px solid var(--border); }
+  .stack-row {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    gap: 16px;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+  }
+  .stack-row b { color: var(--accent); }
+  .stack-row span { color: var(--text-muted); }
+
+  /* ---------- Get started ---------- */
+  .code-block {
+    border: 1px solid var(--border);
+    background: var(--surface);
+    padding: 20px;
+    font-size: 13px;
+    overflow-x: auto;
+    white-space: pre;
+  }
+  .code-block .muted { color: var(--text-muted); }
+  .code-block .accent { color: var(--accent); }
+  .req {
+    margin-top: 16px;
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+
+  /* ---------- Footer ---------- */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 32px 0 48px;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+  footer a { color: var(--text-muted); text-decoration: none; }
+  footer a:hover { color: var(--accent); }
+  .footer-links { display: flex; gap: 20px; }
+
+  @media (max-width: 760px) {
+    .hero { grid-template-columns: 1fr; padding-top: 48px; }
+    .hero-mark { order: -1; padding: 24px; }
+    .hero-mark svg { max-width: 160px; }
+    .hero h1 { font-size: 30px; }
+    .screens { grid-template-columns: 1fr; }
+    .features { grid-template-columns: 1fr; }
+    .stack-row { grid-template-columns: 1fr; gap: 4px; }
+    .nav-links { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap nav-row">
+    <div class="brand">
+      <svg viewBox="0 0 512 512" role="img" aria-label="Longbox mark">
+        <rect width="512" height="512" fill="#0B0902"/>
+        <rect x="28" y="28" width="456" height="456" fill="none" stroke="#3A2C0E" stroke-width="10"/>
+        <text x="256" y="330" font-family="'Space Mono', monospace" font-weight="700" font-size="200" fill="#FCB001" text-anchor="middle">~/L</text>
+      </svg>
+      LONGBOX
+    </div>
+    <div class="nav-links">
+      <a href="#showcase">Showcase</a>
+      <a href="#features">Features</a>
+      <a href="#get-started">Get Started</a>
+      <a href="https://github.com/peds24/comic-track">GitHub</a>
+    </div>
+  </div>
+</nav>
+
+<header class="wrap hero">
+  <div>
+    <div class="eyebrow">~/longbox$</div>
+    <h1>Scan a comic. Track what's next.</h1>
+    <p>
+      Longbox is a personal comic-reading tracker for Android and iOS. Scan a barcode or search
+      by title, and it tracks what you're currently reading — pulling real issue data (cover,
+      release date, issue number) from a live comic database instead of a spreadsheet you forget
+      to update.
+    </p>
+    <div class="cta-row">
+      <a class="btn solid" href="https://github.com/peds24/comic-track">View on GitHub</a>
+      <a class="btn outline" href="#get-started">Get Started</a>
+    </div>
+  </div>
+  <div class="hero-mark">
+    <svg viewBox="0 0 512 512" role="img" aria-label="Longbox mark">
+      <rect width="512" height="512" fill="#0B0902"/>
+      <rect x="28" y="28" width="456" height="456" fill="none" stroke="#3A2C0E" stroke-width="6"/>
+      <text x="256" y="322" font-family="'Space Mono', monospace" font-weight="700" font-size="196" fill="#FCB001" text-anchor="middle">~/L</text>
+    </svg>
+  </div>
+</header>
+
+<section id="showcase" class="bordered-top">
+  <div class="wrap">
+    <div class="eyebrow">~/showcase$ ls</div>
+    <h2>Real screens, real data</h2>
+    <div class="screens">
+      <div class="screen">
+        <div class="screen-bar"><span><b>LONGBOX</b> · reading.tsx</span><span>1 of 4</span></div>
+        <img src="screenshots/current-reading.png" alt="Current Reading screen showing a tracked comic with cover, title, author, and status badge" loading="lazy" />
+      </div>
+      <div class="screen">
+        <div class="screen-bar"><span><b>LONGBOX</b> · [id].tsx</span><span>2 of 4</span></div>
+        <img src="screenshots/comic-detail.png" alt="Comic detail screen with Increment to Next Issue, Mark as Read, and Remove actions" loading="lazy" />
+      </div>
+      <div class="screen">
+        <div class="screen-bar"><span><b>LONGBOX</b> · read.tsx</span><span>3 of 4</span></div>
+        <img src="screenshots/comics-read-by-series.png" alt="Comics Read screen grouped by series with collapsible sections" loading="lazy" />
+      </div>
+      <div class="screen">
+        <div class="screen-bar"><span><b>LONGBOX</b> · add/index.tsx</span><span>4 of 4</span></div>
+        <img src="screenshots/add-comic.png" alt="Add Comic screen with Scan Barcode, Enter Code Manually, and Search by Title options" loading="lazy" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="features" class="bordered-top">
+  <div class="wrap">
+    <div class="eyebrow">~/features$ cat</div>
+    <h2>What it does</h2>
+    <div class="features">
+      <div class="feature">
+        <div class="prompt">01</div>
+        <h3>Add a comic three ways</h3>
+        <p>Scan a barcode (UPC for single issues, ISBN for trade paperbacks), enter a code manually, or search by title. Every path lands on a confirm screen before anything's saved.</p>
+      </div>
+      <div class="feature">
+        <div class="prompt">02</div>
+        <h3>Current Reading</h3>
+        <p>Every active series and issue at a glance — cover, title, author, release date, issue number.</p>
+      </div>
+      <div class="feature">
+        <div class="prompt">03</div>
+        <h3>Increment to next issue</h3>
+        <p>Re-queries the API for the real next issue — new cover, release date, issue number — and automatically logs the one you just finished into Comics Read.</p>
+      </div>
+      <div class="feature">
+        <div class="prompt">04</div>
+        <h3>Comics Read</h3>
+        <p>Full history with search, and three sort modes: Recent, A–Z, and a collapsible By Series grouping.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="bordered-top">
+  <div class="wrap">
+    <div class="eyebrow">~/stack$ cat</div>
+    <h2>How it's built</h2>
+    <div class="stack-list">
+      <div class="stack-row"><b>Expo + Expo Router</b><span>File-based routing, TypeScript, single codebase for Android and iOS.</span></div>
+      <div class="stack-row"><b>expo-sqlite</b><span>One <code>tracked_comics</code> table, a thin repository module for all reads/writes.</span></div>
+      <div class="stack-row"><b>Metron</b><span>Series search, issue detail, and UPC-based barcode resolution for single issues.</span></div>
+      <div class="stack-row"><b>OpenLibrary</b><span>ISBN lookup for trade paperbacks — no API key required.</span></div>
+      <div class="stack-row"><b>expo-camera</b><span><code>CameraView</code> targeting <code>ean13</code>/<code>ean8</code>/<code>upc_a</code>/<code>upc_e</code> symbologies.</span></div>
+    </div>
+  </div>
+</section>
+
+<section id="get-started" class="bordered-top">
+  <div class="wrap">
+    <div class="eyebrow">~/setup$ run</div>
+    <h2>Get started</h2>
+    <div class="code-block">$ npm install
+$ cp .env.example .env<span class="muted">   # fill in EXPO_PUBLIC_METRON_USERNAME / EXPO_PUBLIC_METRON_PASSWORD</span>
+$ npm run check-apis<span class="muted">      # optional: verify Metron/OpenLibrary credentials first</span>
+$ npx expo start</div>
+    <p class="req">
+      Requires a free <a href="https://metron.cloud">Metron</a> account for the two
+      <code>EXPO_PUBLIC_METRON_*</code> variables. OpenLibrary needs no credentials. Barcode
+      scanning needs a physical device with a camera — the simulator/emulator can exercise every
+      other flow (search, manual entry, increment, read history).
+    </p>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap" style="display:flex; justify-content:space-between; flex-wrap:wrap; gap:16px; width:100%;">
+    <span>Longbox — formerly Comic Track.</span>
+    <div class="footer-links">
+      <a href="https://github.com/peds24/comic-track">Source</a>
+      <a href="https://github.com/peds24/comic-track#readme">README</a>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,5 @@
+<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Longbox">
+  <rect width="512" height="512" fill="#0B0902"/>
+  <rect x="28" y="28" width="456" height="456" fill="none" stroke="#3A2C0E" stroke-width="6"/>
+  <text x="256" y="322" font-family="'Space Mono', 'SF Mono', Menlo, Consolas, monospace" font-weight="700" font-size="196" fill="#FCB001" text-anchor="middle">~/L</text>
+</svg>

@@ -8,9 +8,9 @@ A personal comic-reading tracker built with Expo/React Native. Scan or search fo
 |---|---|
 | ![Current Reading](docs/screenshots/current-reading.png) | ![Comics Read grouped by series](docs/screenshots/comics-read-by-series.png) |
 
-| Add → Confirm | Comic detail |
+| Add Comic | Comic detail |
 |---|---|
-| ![Confirm screen](docs/screenshots/add-confirm.png) | ![Comic detail screen](docs/screenshots/comic-detail.png) |
+| ![Add Comic screen](docs/screenshots/add-comic.png) | ![Comic detail screen](docs/screenshots/comic-detail.png) |
 
 ## Features
 
@@ -35,7 +35,9 @@ A personal comic-reading tracker built with Expo/React Native. Scan or search fo
 
 ## Design
 
-Longbox uses an "orange terminal" theme: a bundled monospace font (Space Mono), a single dark palette with a `#FCB001` accent, square corners, hairline borders, no shadows/gradients. Comic cards read like a directory listing; section headers read like a shell prompt. The full interactive mockup — including an accent-color switcher (green/blue/red/yellow-orange/purple) used to land on this direction — is here:
+Longbox uses an "orange terminal" theme: a bundled monospace font (Space Mono), a single dark palette with a `#FCB001` accent, square corners, hairline borders, no shadows/gradients. Comic cards read like a directory listing; section headers read like a shell prompt. This is shipped in the app now — see the screenshots above.
+
+The original interactive design exploration — including the accent-color switcher (green/blue/red/yellow-orange/purple) used to land on this direction — is preserved here:
 
 **[Longbox terminal theme concept →](https://claude.ai/code/artifact/a43fc1fb-2758-41b4-b4f2-854b7137c3da)**
 
