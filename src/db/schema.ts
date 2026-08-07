@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS tracked_comics (
   author TEXT,
   issue_number TEXT,
 
-  source TEXT NOT NULL CHECK (source IN ('metron', 'openlibrary', 'manual')),
+  source TEXT NOT NULL CHECK (source IN ('metron', 'openlibrary', 'google_books', 'manual')),
   metron_series_id TEXT,
   metron_issue_id TEXT,
   isbn TEXT,

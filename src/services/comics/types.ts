@@ -1,4 +1,4 @@
-export type ComicMatchSource = 'metron' | 'openlibrary';
+export type ComicMatchSource = 'metron' | 'openlibrary' | 'google_books';
 
 export interface ComicMatch {
   type: 'issue' | 'tpb';

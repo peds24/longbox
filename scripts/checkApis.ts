@@ -6,6 +6,7 @@
  */
 import 'dotenv/config';
 
+import { lookupIsbn as lookupIsbnGoogleBooks } from '../src/services/comics/google-books';
 import { findIssuesByUpc, getIssue, issueDetailToComicMatch, searchSeries } from '../src/services/comics/metron';
 import { lookupIsbn } from '../src/services/comics/open-library';
 
@@ -34,6 +35,11 @@ async function main() {
   console.log('\n--- OpenLibrary: ISBN lookup ---');
   const book = await lookupIsbn(KNOWN_ISBN);
   console.log(book);
+
+  console.log('\n--- Google Books: ISBN lookup (fallback path) ---');
+  console.log(process.env.EXPO_PUBLIC_GOOGLE_BOOKS_API_KEY ? '(using API key)' : '(no API key set — unauthenticated request)');
+  const googleBook = await lookupIsbnGoogleBooks(KNOWN_ISBN);
+  console.log(googleBook);
 
   console.log('\nAll checks completed.');
 }
