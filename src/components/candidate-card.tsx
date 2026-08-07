@@ -5,7 +5,13 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
-import type { ComicMatch } from '@/services/comics/types';
+import type { ComicMatch, ComicMatchSource } from '@/services/comics/types';
+
+const SOURCE_LABELS: Record<ComicMatchSource, string> = {
+  metron: 'Metron',
+  openlibrary: 'OpenLibrary',
+  google_books: 'Google Books',
+};
 
 export function CandidateCard({
   match,
@@ -51,7 +57,7 @@ export function CandidateCard({
             </ThemedText>
           )}
           <ThemedText type="small" themeColor="textMuted">
-            {match.type === 'issue' ? 'Single issue' : 'Trade paperback'} · via {match.source}
+            {match.type === 'issue' ? 'Single issue' : 'Trade paperback'} · via {SOURCE_LABELS[match.source]}
           </ThemedText>
         </View>
       </ThemedView>

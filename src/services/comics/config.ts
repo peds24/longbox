@@ -9,3 +9,8 @@ export function getMetronCredentials(): { username: string; password: string } {
 
   return { username, password };
 }
+
+/** Google Books works unauthenticated too (lower quota) — the key is optional, never required. */
+export function getGoogleBooksApiKey(): string | undefined {
+  return process.env.EXPO_PUBLIC_GOOGLE_BOOKS_API_KEY;
+}

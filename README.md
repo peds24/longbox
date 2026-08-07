@@ -27,10 +27,11 @@ A personal comic-reading tracker built with Expo/React Native. Scan or search fo
 
 - **Framework**: Expo + Expo Router (file-based routing), TypeScript.
 - **Storage**: `expo-sqlite`, single `tracked_comics` table, thin repository module for all CRUD (`src/db/repository.ts`).
-- **Comic data**: no single "comic API" fits every need, so this normalizes two sources behind one `ComicMatch` shape (`src/services/comics/`):
+- **Comic data**: no single "comic API" fits every need, so this normalizes three sources behind one `ComicMatch` shape (`src/services/comics/`):
   - **[Metron](https://metron.cloud)** — series search, issue detail, and UPC-based barcode resolution for single issues.
   - **[OpenLibrary](https://openlibrary.org)** — ISBN lookup for trade paperbacks (no API key required).
-  - `scripts/checkApis.ts` is a standalone sanity check for both integrations, independent of the app: `npm run check-apis`.
+  - **[Google Books](https://developers.google.com/books)** — fallback ISBN lookup, only tried when OpenLibrary doesn't have a given ISBN. Works unauthenticated (lower quota); an API key is optional.
+  - `scripts/checkApis.ts` is a standalone sanity check for all three integrations, independent of the app: `npm run check-apis`.
 - **Camera**: `expo-camera`'s `CameraView`, targeting `ean13`/`ean8`/`upc_a`/`upc_e` symbologies.
 
 ## Design
@@ -46,10 +47,10 @@ The original interactive design exploration — including the accent-color switc
 ```bash
 npm install
 cp .env.example .env   # fill in EXPO_PUBLIC_METRON_USERNAME / EXPO_PUBLIC_METRON_PASSWORD
-npm run check-apis      # optional: verify Metron/OpenLibrary credentials before running the app
+npm run check-apis      # optional: verify Metron/OpenLibrary/Google Books before running the app
 npx expo start
 ```
 
-Requires a free [Metron](https://metron.cloud) account for `EXPO_PUBLIC_METRON_USERNAME`/`EXPO_PUBLIC_METRON_PASSWORD`. OpenLibrary needs no credentials.
+Requires a free [Metron](https://metron.cloud) account for `EXPO_PUBLIC_METRON_USERNAME`/`EXPO_PUBLIC_METRON_PASSWORD`. OpenLibrary needs no credentials. `EXPO_PUBLIC_GOOGLE_BOOKS_API_KEY` is optional — only raises the fallback's rate limit, the app works without it.
 
 Barcode scanning needs a physical device with a camera — Expo Go on iOS or Android both work; the simulator/emulator can exercise every other flow (search, manual entry, increment, read history).
