@@ -4,9 +4,13 @@ A personal comic-reading tracker built with Expo/React Native. Scan or search fo
 
 ## Screenshots
 
-| Current Reading | Comics Read — By Series |
+| Current Reading | Comic Box — everything |
 |---|---|
-| ![Current Reading](docs/screenshots/current-reading.png) | ![Comics Read grouped by series](docs/screenshots/comics-read-by-series.png) |
+| ![Current Reading](docs/screenshots/current-reading.png) | ![Comic Box showing the whole collection](docs/screenshots/comic-box-all.png) |
+
+| Comic Box — Backlog | Comic Box — By Series |
+|---|---|
+| ![Comic Box filtered to the backlog](docs/screenshots/comic-box-backlog.png) | ![Comic Box grouped by series](docs/screenshots/comic-box-by-series.png) |
 
 | Add Comic | Comic detail |
 |---|---|

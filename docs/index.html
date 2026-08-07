@@ -2,13 +2,13 @@
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>Longbox — a terminal for your comics</title>
-<meta name="description" content="Longbox is a personal comic-reading tracker for Android and iOS. Scan or search a comic, track what you're reading, and mark it as read — Longbox checks the real next issue for you and offers to add it." />
+<meta name="description" content="Longbox is a personal comic-reading tracker for Android and iOS. Scan or search a comic into your backlog, track what you're reading, and mark it as read — Longbox checks the real next issue for you and offers to add it." />
 <link rel="icon" type="image/svg+xml" href="assets/longbox-mark.svg" />
 <link rel="icon" type="image/png" href="assets/favicon-32.png" sizes="32x32" />
 <meta property="og:title" content="Longbox — a terminal for your comics" />
-<meta property="og:description" content="Scan a comic, track what you're reading, mark it as read. Longbox checks the real next issue for you. No spreadsheet." />
+<meta property="og:description" content="Scan a comic into your backlog, track what you're reading, mark it as read. Longbox checks the real next issue for you. No spreadsheet." />
 <meta property="og:image" content="assets/longbox-mark.png" />
 <style>
   @font-face {
@@ -37,6 +37,8 @@
     --success: #43d17a;
     --danger: #f2564b;
     --max: 1040px;
+    --gutter: 24px;
+    --section-y: 56px;
   }
 
   * { box-sizing: border-box; }
@@ -49,6 +51,7 @@
     color: var(--text);
     font-family: 'Space Mono', ui-monospace, monospace;
     -webkit-font-smoothing: antialiased;
+    -webkit-text-size-adjust: 100%;
     line-height: 1.6;
     overflow-x: hidden;
   }
@@ -60,7 +63,11 @@
   .wrap {
     max-width: var(--max);
     margin: 0 auto;
-    padding: 0 24px;
+    padding: 0 var(--gutter);
+    /* The 0px fallbacks are required: an unset env() with no fallback is
+       invalid at computed-value time and would zero the padding entirely. */
+    padding-left: max(var(--gutter), env(safe-area-inset-left, 0px));
+    padding-right: max(var(--gutter), env(safe-area-inset-right, 0px));
   }
 
   .eyebrow {
@@ -79,7 +86,10 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 18px 0;
+    /* Longhands only — these elements are also .wrap, and a `padding`
+       shorthand here would clobber .wrap's horizontal gutter. */
+    padding-top: 18px;
+    padding-bottom: 18px;
   }
   .brand {
     display: flex;
@@ -94,16 +104,21 @@
   .nav-links a { text-decoration: none; color: var(--text-muted); }
   .nav-links a:hover { color: var(--accent); }
 
+  /* Nav links stay reachable on small screens: the row becomes a
+     horizontally scrollable strip rather than being hidden. */
+  .nav-links::-webkit-scrollbar { display: none; }
+
   /* ---------- Hero ---------- */
   .hero {
-    padding: 72px 0 56px;
+    padding-top: 72px;
+    padding-bottom: 56px;
     display: grid;
     grid-template-columns: 1.1fr 0.9fr;
     gap: 48px;
     align-items: center;
   }
   .hero h1 {
-    font-size: 42px;
+    font-size: clamp(26px, 5.2vw, 42px);
     line-height: 1.15;
     margin: 14px 0 20px;
     letter-spacing: 0.01em;
@@ -142,9 +157,9 @@
   .hero-mark svg { width: 100%; height: auto; max-width: 240px; }
 
   /* ---------- Screen frames (showcase) ---------- */
-  section { padding: 56px 0; }
+  section { padding: var(--section-y) 0; }
   section.bordered-top { border-top: 1px solid var(--border); }
-  h2 { font-size: 22px; margin: 8px 0 32px; letter-spacing: 0.01em; }
+  h2 { font-size: clamp(18px, 3vw, 22px); margin: 8px 0 32px; letter-spacing: 0.01em; }
 
   .screens {
     display: grid;
@@ -229,15 +244,87 @@
   footer a:hover { color: var(--accent); }
   .footer-links { display: flex; gap: 20px; }
 
-  @media (max-width: 760px) {
-    .hero { grid-template-columns: 1fr; padding-top: 48px; }
+  /* ---------- Tablet (landscape/large portrait) ---------- */
+  @media (max-width: 1024px) {
+    :root { --gutter: 20px; --section-y: 44px; }
+    .hero { padding-top: 56px; padding-bottom: 44px; gap: 32px; }
+    .hero-mark { padding: 28px; }
+    .hero-mark svg { max-width: 200px; }
+    .stack-row { grid-template-columns: 170px 1fr; }
+  }
+
+  /* ---------- Tablet portrait (iPad is 768–834 — above the phone
+     breakpoint, so it needs its own step or the hero stays cramped) ---------- */
+  @media (max-width: 900px) {
+    :root { --section-y: 40px; }
+    .hero {
+      grid-template-columns: 1fr;
+      padding-top: 40px;
+      padding-bottom: 36px;
+      gap: 28px;
+    }
+    /* Mark leads on narrow screens — it reads as a logo, not a sidebar. */
     .hero-mark { order: -1; padding: 24px; }
     .hero-mark svg { max-width: 160px; }
-    .hero h1 { font-size: 30px; }
-    .screens { grid-template-columns: 1fr; }
+    .hero h1 { font-size: clamp(26px, 4.4vw, 36px); }
+    .hero p { font-size: 14px; margin-bottom: 24px; }
+    h2 { margin-bottom: 24px; }
+
+    /* Keep the nav usable instead of hiding it: brand on top, links
+       below as a scrollable strip that never forces the page wider.
+       The single-row nav starts clipping its last link before 900px. */
+    .nav-row {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 12px;
+      padding-top: 14px;
+      padding-bottom: 14px;
+    }
+    .brand { font-size: 16px; }
+    .brand svg { width: 24px; height: 24px; }
+    .nav-links {
+      width: 100%;
+      gap: 18px;
+      font-size: 12px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+    }
+    .nav-links a { white-space: nowrap; padding: 4px 0; }
+  }
+
+  /* ---------- Large phone / small tablet: two-up grids collapse.
+     Held back to 640px so tablet portrait keeps its 2-column showcase. ---------- */
+  @media (max-width: 640px) {
+    .screens { grid-template-columns: 1fr; gap: 16px; }
+    /* Phone screenshots shouldn't stretch past their natural width. */
+    .screen { max-width: 420px; width: 100%; margin: 0 auto; }
     .features { grid-template-columns: 1fr; }
-    .stack-row { grid-template-columns: 1fr; gap: 4px; }
-    .nav-links { display: none; }
+    .stack-row { grid-template-columns: 1fr; gap: 4px; padding: 14px 0; }
+  }
+
+  /* ---------- Phone ---------- */
+  @media (max-width: 480px) {
+    :root { --gutter: 16px; --section-y: 32px; }
+    .hero { padding-top: 32px; padding-bottom: 28px; }
+    .hero-mark { padding: 20px; }
+    .hero-mark svg { max-width: 128px; }
+    .eyebrow { font-size: 11px; }
+
+    /* Full-bleed buttons give a comfortable tap target one-handed. */
+    .cta-row { gap: 10px; }
+    .btn {
+      flex: 1 1 100%;
+      text-align: center;
+      padding: 15px 18px;
+    }
+
+    .screen-bar { padding: 8px 10px; font-size: 9px; gap: 8px; }
+    .feature { padding: 18px; }
+    .code-block { padding: 14px; font-size: 12px; }
+    .req { font-size: 12px; }
+    footer { padding: 24px 0 32px; }
+    .footer-links { gap: 16px; }
   }
 </style>
 </head>
@@ -268,9 +355,9 @@
     <h1>Scan a comic. Track what's next.</h1>
     <p>
       Longbox is a personal comic-reading tracker for Android and iOS. Scan a barcode or search
-      by title, and it tracks what you're currently reading — pulling real issue data (cover,
-      release date, issue number) from a live comic database instead of a spreadsheet you forget
-      to update.
+      by title to file a comic in your backlog, then move it through reading and read — pulling
+      real issue data (cover, release date, issue number) from a live comic database instead of a
+      spreadsheet you forget to update.
     </p>
     <div class="cta-row">
       <a class="btn solid" href="https://github.com/peds24/comic-track">View on GitHub</a>
@@ -300,8 +387,8 @@
         <img src="screenshots/comic-detail.png" alt="Comic detail screen with Mark as Read and Remove actions" loading="lazy" />
       </div>
       <div class="screen">
-        <div class="screen-bar"><span><b>LONGBOX</b> · read.tsx</span><span>3 of 4</span></div>
-        <img src="screenshots/comics-read-by-series.png" alt="Comics Read screen grouped by series with collapsible sections" loading="lazy" />
+        <div class="screen-bar"><span><b>LONGBOX</b> · collection.tsx</span><span>3 of 4</span></div>
+        <img src="screenshots/comic-box-by-series.png" alt="Comic Box screen grouped by series with collapsible sections, showing backlog, reading, and read comics side by side" loading="lazy" />
       </div>
       <div class="screen">
         <div class="screen-bar"><span><b>LONGBOX</b> · add/index.tsx</span><span>4 of 4</span></div>
@@ -323,18 +410,18 @@
       </div>
       <div class="feature">
         <div class="prompt">02</div>
-        <h3>Current Reading</h3>
-        <p>Every active series and issue at a glance — cover, title, author, release date, issue number.</p>
+        <h3>Backlog, Reading, Read</h3>
+        <p>Owning a comic and having read it are different facts. New adds land in the Backlog; Current Reading stays honest about what's actually in your hands right now.</p>
       </div>
       <div class="feature">
         <div class="prompt">03</div>
         <h3>Mark as Read</h3>
-        <p>Checks the API for a real next issue first. Found one? You're asked whether to add it to Current Reading. Either way, the current issue moves to Comics Read.</p>
+        <p>Checks the API for a real next issue first. Found one? You're asked whether to add it to your backlog. Either way, the current issue moves to Read.</p>
       </div>
       <div class="feature">
         <div class="prompt">04</div>
-        <h3>Comics Read</h3>
-        <p>Full history with search, three sort modes (Recent, A–Z, a collapsible By Series grouping), and a Check for Next Issue button on every issue.</p>
+        <h3>Comic Box</h3>
+        <p>The whole collection in one place — filter by Backlog, Reading, or Read, search it, and sort three ways (Recent, A–Z, a collapsible By Series grouping).</p>
       </div>
     </div>
   </div>
@@ -366,7 +453,7 @@ $ npx expo start</div>
       Requires a free <a href="https://metron.cloud">Metron</a> account for the two
       <code>EXPO_PUBLIC_METRON_*</code> variables. OpenLibrary needs no credentials. Barcode
       scanning needs a physical device with a camera — the simulator/emulator can exercise every
-      other flow (search, manual entry, mark as read, read history).
+      other flow (search, manual entry, moving comics between states, the Comic Box).
     </p>
   </div>
 </section>
