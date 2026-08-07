@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { FlatList, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
+import { FlatList, Pressable, SectionList, StyleSheet, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ComicCard } from '@/components/comic-card';
@@ -8,9 +8,10 @@ import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import { useComicsList } from '@/hooks/use-comics';
 import { useTheme } from '@/hooks/use-theme';
+import { sortByIssueNumber } from '@/services/comics/issue-number';
 import type { TrackedComic } from '@/types/comic';
 
-type SortMode = 'recent' | 'alphabetical';
+type SortMode = 'recent' | 'alphabetical' | 'series';
 
 /**
  * Metron-sourced issues share a stable metronSeriesId across issues of the same series.
@@ -25,39 +26,64 @@ function seriesName(comic: TrackedComic): string {
   return comic.seriesTitle ?? comic.title;
 }
 
+interface Section {
+  key: string;
+  title: string;
+  data: TrackedComic[];
+}
+
 export default function ComicsReadScreen() {
   const { comics, loading, error, refetch } = useComicsList('read');
   const [query, setQuery] = useState('');
   const [sortMode, setSortMode] = useState<SortMode>('recent');
-  const [selectedSeries, setSelectedSeries] = useState<string | null>(null);
+  const [collapsedSeries, setCollapsedSeries] = useState<Set<string>>(new Set());
   const theme = useTheme();
 
-  const seriesOptions = useMemo(() => {
-    const byKey = new Map<string, string>();
-    for (const comic of comics) {
-      const key = seriesKey(comic);
-      if (!byKey.has(key)) byKey.set(key, seriesName(comic));
-    }
-    return Array.from(byKey.entries())
-      .map(([key, name]) => ({ key, name }))
-      .sort((a, b) => a.name.localeCompare(b.name));
-  }, [comics]);
+  const searched = useMemo(() => {
+    const trimmed = query.trim().toLowerCase();
+    if (!trimmed) return comics;
+    return comics.filter((c) =>
+      [c.title, c.seriesTitle, c.author].some((field) => field?.toLowerCase().includes(trimmed))
+    );
+  }, [comics, query]);
 
   const visibleComics = useMemo(() => {
-    let filtered = selectedSeries ? comics.filter((c) => seriesKey(c) === selectedSeries) : comics;
-
-    const trimmed = query.trim().toLowerCase();
-    if (trimmed) {
-      filtered = filtered.filter((c) =>
-        [c.title, c.seriesTitle, c.author].some((field) => field?.toLowerCase().includes(trimmed))
-      );
-    }
-
     if (sortMode === 'alphabetical') {
-      return [...filtered].sort((a, b) => a.title.localeCompare(b.title));
+      return [...searched].sort((a, b) => a.title.localeCompare(b.title));
     }
-    return filtered;
-  }, [comics, query, sortMode, selectedSeries]);
+    return searched;
+  }, [searched, sortMode]);
+
+  const sections = useMemo<Section[]>(() => {
+    const byKey = new Map<string, Section>();
+    for (const comic of searched) {
+      const key = seriesKey(comic);
+      const existing = byKey.get(key);
+      if (existing) {
+        existing.data.push(comic);
+      } else {
+        byKey.set(key, { key, title: seriesName(comic), data: [comic] });
+      }
+    }
+    return Array.from(byKey.values())
+      .sort((a, b) => a.title.localeCompare(b.title))
+      .map((section) => ({
+        ...section,
+        data: collapsedSeries.has(section.key) ? [] : sortByIssueNumber(section.data, (c) => c.issueNumber),
+      }));
+  }, [searched, collapsedSeries]);
+
+  function toggleSeries(key: string) {
+    setCollapsedSeries((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  }
+
+  const isGrouped = sortMode === 'series';
+  const hasResults = searched.length > 0;
 
   return (
     <ThemedView style={styles.container}>
@@ -93,34 +119,15 @@ export default function ComicsReadScreen() {
               ]}>
               <ThemedText type="smallBold">A–Z</ThemedText>
             </Pressable>
+            <Pressable
+              onPress={() => setSortMode('series')}
+              style={[
+                styles.sortChip,
+                { backgroundColor: isGrouped ? theme.backgroundSelected : theme.backgroundElement },
+              ]}>
+              <ThemedText type="smallBold">By Series</ThemedText>
+            </Pressable>
           </View>
-
-          {seriesOptions.length > 0 && (
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.seriesRow}>
-              <Pressable
-                onPress={() => setSelectedSeries(null)}
-                style={[
-                  styles.sortChip,
-                  { backgroundColor: selectedSeries === null ? theme.backgroundSelected : theme.backgroundElement },
-                ]}>
-                <ThemedText type="smallBold">All Series</ThemedText>
-              </Pressable>
-              {seriesOptions.map((option) => (
-                <Pressable
-                  key={option.key}
-                  onPress={() => setSelectedSeries(option.key)}
-                  style={[
-                    styles.sortChip,
-                    {
-                      backgroundColor:
-                        selectedSeries === option.key ? theme.backgroundSelected : theme.backgroundElement,
-                    },
-                  ]}>
-                  <ThemedText type="smallBold">{option.name}</ThemedText>
-                </Pressable>
-              ))}
-            </ScrollView>
-          )}
         </View>
 
         {error && (
@@ -137,22 +144,45 @@ export default function ComicsReadScreen() {
           </View>
         )}
 
-        {!loading && !error && comics.length > 0 && visibleComics.length === 0 && (
+        {!loading && !error && comics.length > 0 && !hasResults && (
           <View style={styles.empty}>
             <ThemedText type="default" themeColor="textSecondary" style={styles.message}>
-              No comics match the current filters.
+              No comics match &quot;{query.trim()}&quot;.
             </ThemedText>
           </View>
         )}
 
-        <FlatList
-          data={visibleComics}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => <ComicCard comic={item} />}
-          contentContainerStyle={styles.list}
-          onRefresh={refetch}
-          refreshing={loading}
-        />
+        {isGrouped ? (
+          <SectionList
+            sections={sections}
+            keyExtractor={(item) => item.id}
+            renderItem={({ item }) => <ComicCard comic={item} />}
+            renderSectionHeader={({ section }) => {
+              const collapsed = collapsedSeries.has(section.key);
+              return (
+                <Pressable onPress={() => toggleSeries(section.key)} style={styles.sectionHeader}>
+                  <ThemedText type="small" style={styles.sectionArrow}>
+                    {collapsed ? '▸' : '▾'}
+                  </ThemedText>
+                  <ThemedText type="smallBold">{section.title}</ThemedText>
+                </Pressable>
+              );
+            }}
+            contentContainerStyle={styles.list}
+            stickySectionHeadersEnabled={false}
+            onRefresh={refetch}
+            refreshing={loading}
+          />
+        ) : (
+          <FlatList
+            data={visibleComics}
+            keyExtractor={(item) => item.id}
+            renderItem={({ item }) => <ComicCard comic={item} />}
+            contentContainerStyle={styles.list}
+            onRefresh={refetch}
+            refreshing={loading}
+          />
+        )}
       </SafeAreaView>
     </ThemedView>
   );
@@ -183,10 +213,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: Spacing.two,
   },
-  seriesRow: {
-    flexDirection: 'row',
-    gap: Spacing.two,
-  },
   sortChip: {
     paddingHorizontal: Spacing.three,
     paddingVertical: Spacing.one,
@@ -196,6 +222,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.three,
     paddingBottom: Spacing.six,
     gap: Spacing.two,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.one,
+    paddingTop: Spacing.three,
+    paddingBottom: Spacing.one,
+  },
+  sectionArrow: {
+    width: Spacing.four,
+    fontSize: 22,
+    lineHeight: 22,
   },
   empty: {
     paddingHorizontal: Spacing.three,
