@@ -17,31 +17,49 @@ function formatDate(iso?: string) {
 
 export function ComicCard({ comic }: { comic: TrackedComic }) {
   const theme = useTheme();
+  const meta = [comic.author, formatDate(comic.releaseDate)].filter(Boolean).join(' · ');
 
   return (
     <Link href={`/comic/${comic.id}`} asChild>
       <Pressable style={({ pressed }) => [pressed && styles.pressed]}>
-        <ThemedView type="backgroundElement" style={styles.card}>
-          <Image source={comic.coverImageUrl} style={styles.cover} contentFit="cover" transition={150} />
+        <ThemedView type="surface" style={[styles.card, { borderColor: theme.border }]}>
+          <Image
+            source={comic.coverImageUrl}
+            style={[styles.cover, { borderColor: theme.border }]}
+            contentFit="cover"
+            transition={150}
+          />
           <View style={styles.info}>
-            <ThemedText type="smallBold" numberOfLines={2}>
-              {comic.title}
-            </ThemedText>
-            {comic.author && (
-              <ThemedText type="small" themeColor="textSecondary" numberOfLines={1}>
-                {comic.author}
+            <View style={styles.titleRow}>
+              <ThemedText type="smallBold" numberOfLines={1} style={styles.title}>
+                {comic.title}
+              </ThemedText>
+              {comic.type === 'issue' && comic.issueNumber ? (
+                <ThemedText type="small" style={{ color: theme.accent }}>
+                  [#{comic.issueNumber}]
+                </ThemedText>
+              ) : (
+                <ThemedText type="small" themeColor="textMuted">
+                  [TPB]
+                </ThemedText>
+              )}
+            </View>
+            {meta.length > 0 && (
+              <ThemedText type="small" themeColor="textMuted" numberOfLines={1}>
+                {meta}
               </ThemedText>
             )}
-            {comic.releaseDate && (
-              <ThemedText type="small" themeColor="textSecondary">
-                {formatDate(comic.releaseDate)}
+            <View
+              style={[
+                styles.badge,
+                { borderColor: comic.status === 'read' ? theme.success : theme.accent },
+              ]}>
+              <ThemedText
+                type="small"
+                style={{ color: comic.status === 'read' ? theme.success : theme.accent }}>
+                {comic.status === 'read' ? 'READ' : 'READING'}
               </ThemedText>
-            )}
-            {comic.type === 'issue' && comic.issueNumber && (
-              <View style={[styles.badge, { backgroundColor: theme.backgroundSelected }]}>
-                <ThemedText type="smallBold">#{comic.issueNumber}</ThemedText>
-              </View>
-            )}
+            </View>
           </View>
         </ThemedView>
       </Pressable>
@@ -56,24 +74,33 @@ const styles = StyleSheet.create({
   card: {
     flexDirection: 'row',
     gap: Spacing.three,
-    padding: Spacing.three,
-    borderRadius: Spacing.three,
+    padding: Spacing.two + 2,
+    borderWidth: 1,
   },
   cover: {
-    width: 64,
-    height: 96,
-    borderRadius: Spacing.one,
+    width: 56,
+    height: 84,
+    borderWidth: 1,
   },
   info: {
     flex: 1,
     gap: Spacing.half,
     justifyContent: 'center',
+    minWidth: 0,
+  },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    gap: Spacing.two,
+  },
+  title: {
+    flexShrink: 1,
   },
   badge: {
     alignSelf: 'flex-start',
-    borderRadius: Spacing.four,
+    borderWidth: 1,
     paddingHorizontal: Spacing.two,
-    paddingVertical: Spacing.half,
+    paddingVertical: 2,
     marginTop: Spacing.one,
   },
 });

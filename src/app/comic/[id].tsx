@@ -2,8 +2,9 @@ import { Image } from 'expo-image';
 import { Stack, useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useCallback, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
 
+import { TerminalButton } from '@/components/terminal-button';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
@@ -87,7 +88,7 @@ export default function ComicDetailScreen() {
   if (loading) {
     return (
       <ThemedView style={styles.centered}>
-        <ActivityIndicator />
+        <ActivityIndicator color={theme.accent} />
       </ThemedView>
     );
   }
@@ -95,7 +96,7 @@ export default function ComicDetailScreen() {
   if (!comic) {
     return (
       <ThemedView style={styles.centered}>
-        <ThemedText type="default" themeColor="textSecondary">
+        <ThemedText type="default" themeColor="textMuted">
           This comic couldn&apos;t be found — it may have been removed.
         </ThemedText>
       </ThemedView>
@@ -106,37 +107,45 @@ export default function ComicDetailScreen() {
     <ThemedView style={styles.container}>
       <Stack.Screen options={{ title: comic.title }} />
       <ScrollView contentContainerStyle={styles.scroll}>
-        <Image source={comic.coverImageUrl} style={styles.cover} contentFit="cover" />
+        <Image
+          source={comic.coverImageUrl}
+          style={[styles.cover, { borderColor: theme.border }]}
+          contentFit="cover"
+        />
 
-        <ThemedText type="subtitle">{comic.title}</ThemedText>
+        <ThemedText type="prompt">~/reading$ cat</ThemedText>
+        <View style={styles.titleRow}>
+          <ThemedText type="subtitle" style={styles.title}>
+            {comic.title}
+          </ThemedText>
+          {comic.type === 'issue' && comic.issueNumber && (
+            <ThemedText type="default" style={{ color: theme.accent }}>
+              [#{comic.issueNumber}]
+            </ThemedText>
+          )}
+        </View>
         {comic.author && (
-          <ThemedText type="default" themeColor="textSecondary">
+          <ThemedText type="default" themeColor="textMuted">
             {comic.author}
           </ThemedText>
         )}
         {comic.releaseDate && (
-          <ThemedText type="small" themeColor="textSecondary">
+          <ThemedText type="small" themeColor="textMuted">
             Released {comic.releaseDate}
           </ThemedText>
-        )}
-        {comic.type === 'issue' && comic.issueNumber && (
-          <ThemedText type="default">Issue #{comic.issueNumber}</ThemedText>
         )}
 
         {comic.type === 'issue' && comic.status === 'reading' && (
           <View style={styles.section}>
-            <Pressable
+            <TerminalButton
+              label="Increment to Next Issue"
+              variant="solid"
+              fullWidth
+              loading={incrementing}
               onPress={handleIncrement}
-              disabled={incrementing}
-              style={[styles.actionButton, { backgroundColor: theme.backgroundElement }]}>
-              {incrementing ? (
-                <ActivityIndicator />
-              ) : (
-                <ThemedText type="smallBold">Increment to next issue</ThemedText>
-              )}
-            </Pressable>
+            />
             {statusMessage && (
-              <ThemedText type="small" themeColor="textSecondary" style={styles.statusMessage}>
+              <ThemedText type="small" themeColor="textMuted" style={styles.statusMessage}>
                 {statusMessage}
               </ThemedText>
             )}
@@ -144,21 +153,15 @@ export default function ComicDetailScreen() {
         )}
 
         <View style={styles.section}>
-          <Pressable
+          <TerminalButton
+            label={comic.status === 'reading' ? 'Mark as Read' : 'Move back to Current Reading'}
+            fullWidth
             onPress={handleToggleRead}
-            style={[styles.actionButton, { backgroundColor: theme.backgroundElement }]}>
-            <ThemedText type="smallBold">
-              {comic.status === 'reading' ? 'Mark as Read' : 'Move back to Current Reading'}
-            </ThemedText>
-          </Pressable>
+          />
         </View>
 
         <View style={styles.section}>
-          <Pressable onPress={handleRemove} style={styles.removeButton}>
-            <ThemedText type="smallBold" themeColor="textSecondary">
-              Remove
-            </ThemedText>
-          </Pressable>
+          <TerminalButton label="Remove" variant="ghost" fullWidth onPress={handleRemove} />
         </View>
       </ScrollView>
     </ThemedView>
@@ -181,24 +184,24 @@ const styles = StyleSheet.create({
   cover: {
     width: 160,
     height: 240,
-    borderRadius: Spacing.two,
+    borderWidth: 1,
     alignSelf: 'center',
     marginBottom: Spacing.three,
+  },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    gap: Spacing.two,
+    flexWrap: 'wrap',
+  },
+  title: {
+    flexShrink: 1,
   },
   section: {
     marginTop: Spacing.three,
   },
-  actionButton: {
-    alignItems: 'center',
-    paddingVertical: Spacing.three,
-    borderRadius: Spacing.three,
-  },
   statusMessage: {
     textAlign: 'center',
     marginTop: Spacing.two,
-  },
-  removeButton: {
-    alignItems: 'center',
-    paddingVertical: Spacing.two,
   },
 });

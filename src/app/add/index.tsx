@@ -5,16 +5,21 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
+import { useTheme } from '@/hooks/use-theme';
 
 export default function AddChoiceScreen() {
+  const theme = useTheme();
+
   return (
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
+        <ThemedText type="prompt">~/add$ choose</ThemedText>
+
         <Link href="/add/scan" asChild>
           <Pressable>
-            <ThemedView type="backgroundElement" style={styles.option}>
-              <ThemedText type="default">Scan barcode</ThemedText>
-              <ThemedText type="small" themeColor="textSecondary">
+            <ThemedView type="surface" style={[styles.option, { borderColor: theme.border }]}>
+              <ThemedText type="smallBold">SCAN BARCODE</ThemedText>
+              <ThemedText type="small" themeColor="textMuted">
                 Scan a single issue&apos;s UPC or a trade paperback&apos;s ISBN
               </ThemedText>
             </ThemedView>
@@ -23,9 +28,9 @@ export default function AddChoiceScreen() {
 
         <Link href="/add/manual" asChild>
           <Pressable>
-            <ThemedView type="backgroundElement" style={styles.option}>
-              <ThemedText type="default">Enter code manually</ThemedText>
-              <ThemedText type="small" themeColor="textSecondary">
+            <ThemedView type="surface" style={[styles.option, { borderColor: theme.border }]}>
+              <ThemedText type="smallBold">ENTER CODE MANUALLY</ThemedText>
+              <ThemedText type="small" themeColor="textMuted">
                 Type a UPC or ISBN instead of scanning
               </ThemedText>
             </ThemedView>
@@ -34,9 +39,9 @@ export default function AddChoiceScreen() {
 
         <Link href="/add/search" asChild>
           <Pressable>
-            <ThemedView type="backgroundElement" style={styles.option}>
-              <ThemedText type="default">Search by title</ThemedText>
-              <ThemedText type="small" themeColor="textSecondary">
+            <ThemedView type="surface" style={[styles.option, { borderColor: theme.border }]}>
+              <ThemedText type="smallBold">SEARCH BY TITLE</ThemedText>
+              <ThemedText type="small" themeColor="textMuted">
                 Find a series by name instead
               </ThemedText>
             </ThemedView>
@@ -58,7 +63,7 @@ const styles = StyleSheet.create({
   },
   option: {
     padding: Spacing.four,
-    borderRadius: Spacing.three,
+    borderWidth: 1,
     gap: Spacing.one,
   },
 });

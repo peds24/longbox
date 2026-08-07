@@ -1,9 +1,10 @@
 import { CameraView, useCameraPermissions, type BarcodeScanningResult } from 'expo-camera';
 import { useRouter } from 'expo-router';
 import { useRef, useState } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { TerminalButton } from '@/components/terminal-button';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
@@ -52,7 +53,7 @@ export default function ScanScreen() {
   if (!permission) {
     return (
       <ThemedView style={styles.centered}>
-        <ActivityIndicator />
+        <ActivityIndicator color={theme.accent} />
       </ThemedView>
     );
   }
@@ -63,11 +64,7 @@ export default function ScanScreen() {
         <ThemedText type="default" style={styles.message}>
           Camera access is needed to scan comic barcodes.
         </ThemedText>
-        <Pressable
-          onPress={requestPermission}
-          style={[styles.actionButton, { backgroundColor: theme.backgroundElement }]}>
-          <ThemedText type="smallBold">Grant Camera Access</ThemedText>
-        </Pressable>
+        <TerminalButton label="Grant Camera Access" variant="solid" onPress={requestPermission} />
       </ThemedView>
     );
   }
@@ -82,53 +79,41 @@ export default function ScanScreen() {
 
       <SafeAreaView style={styles.overlay} edges={['bottom']}>
         {resolving && (
-          <View style={styles.statusBox}>
-            <ActivityIndicator />
-            <ThemedText type="small" style={styles.statusText}>
+          <View style={[styles.statusBox, { backgroundColor: theme.bg, borderColor: theme.border }]}>
+            <ActivityIndicator color={theme.accent} />
+            <ThemedText type="small" themeColor="textMuted" style={styles.statusText}>
               Looking that up…
             </ThemedText>
           </View>
         )}
 
         {unresolvedCode && (
-          <View style={styles.statusBox}>
-            <ThemedText type="small" style={styles.statusText}>
+          <View style={[styles.statusBox, { backgroundColor: theme.bg, borderColor: theme.border }]}>
+            <ThemedText type="small" themeColor="textMuted" style={styles.statusText}>
               No match found for code {unresolvedCode}.
               {!isIsbn(unresolvedCode) &&
                 ' Single issues need the small supplement code next to the barcode too.'}
             </ThemedText>
             <View style={styles.row}>
-              <Pressable
-                onPress={scanAgain}
-                style={[styles.actionButton, { backgroundColor: theme.backgroundElement }]}>
-                <ThemedText type="smallBold">Scan Again</ThemedText>
-              </Pressable>
+              <TerminalButton label="Scan Again" size="sm" onPress={scanAgain} />
               {!isIsbn(unresolvedCode) && (
-                <Pressable
+                <TerminalButton
+                  label="Add Supplement Code"
+                  size="sm"
                   onPress={() => router.push({ pathname: '/add/manual', params: { upc: unresolvedCode } })}
-                  style={[styles.actionButton, { backgroundColor: theme.backgroundElement }]}>
-                  <ThemedText type="smallBold">Add Supplement Code</ThemedText>
-                </Pressable>
+                />
               )}
-              <Pressable
-                onPress={() => router.push('/add/search')}
-                style={[styles.actionButton, { backgroundColor: theme.backgroundElement }]}>
-                <ThemedText type="smallBold">Search by Title</ThemedText>
-              </Pressable>
+              <TerminalButton label="Search by Title" size="sm" onPress={() => router.push('/add/search')} />
             </View>
           </View>
         )}
 
         {errorMessage && (
-          <View style={styles.statusBox}>
-            <ThemedText type="small" style={styles.statusText}>
+          <View style={[styles.statusBox, { backgroundColor: theme.bg, borderColor: theme.border }]}>
+            <ThemedText type="small" themeColor="textMuted" style={styles.statusText}>
               {errorMessage}
             </ThemedText>
-            <Pressable
-              onPress={scanAgain}
-              style={[styles.actionButton, { backgroundColor: theme.backgroundElement }]}>
-              <ThemedText type="smallBold">Try Again</ThemedText>
-            </Pressable>
+            <TerminalButton label="Try Again" onPress={scanAgain} />
           </View>
         )}
       </SafeAreaView>
@@ -158,26 +143,20 @@ const styles = StyleSheet.create({
     bottom: 0,
   },
   statusBox: {
-    backgroundColor: 'rgba(0,0,0,0.75)',
+    borderTopWidth: 1,
     padding: Spacing.three,
     gap: Spacing.two,
   },
   statusText: {
-    color: '#fff',
     textAlign: 'center',
   },
   row: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: Spacing.two,
     justifyContent: 'center',
   },
   message: {
     textAlign: 'center',
-  },
-  actionButton: {
-    alignItems: 'center',
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.two,
-    borderRadius: Spacing.three,
   },
 });
